@@ -1,6 +1,24 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import '../styles/Tags.css';
 
+declare global {
+    interface Window {
+        Telegram: {
+            WebApp: {
+                initDataUnsafe: {
+                    user?: {
+                        id: number;
+                        first_name: string;
+                        last_name?: string;
+                        username?: string;
+                        language_code?: string;
+                        is_premium?: boolean;
+                    };
+                };
+            };
+        };
+    }
+}
 
 interface RewardItemProps {
     icon: string;
@@ -8,7 +26,7 @@ interface RewardItemProps {
     amount: string;
 }
 
-const RewardItem: React.FC<RewardItemProps> = ({icon, title, amount}) => (
+const RewardItem: React.FC<RewardItemProps> = ({ icon, title, amount }) => (
     <div className="reward-item">
         <span className="icon">{icon}</span>
         <span className="title">{title}</span>
@@ -17,15 +35,38 @@ const RewardItem: React.FC<RewardItemProps> = ({icon, title, amount}) => (
 );
 
 const Tags: React.FC = () => {
+    const [accountAge, setAccountAge] = useState<number>(0);
+    const [isPremium, setIsPremium] = useState<boolean>(false);
+    const [totalScore, setTotalScore] = useState<number>(0);
+
+    useEffect(() => {
+        // Fetch user data from Telegram Web App
+        const user = window.Telegram.WebApp.initDataUnsafe.user;
+        if (user) {
+            // For this example, we'll use the user's ID as a proxy for account age
+            // In a real app, you'd want to fetch the actual account creation date
+            setAccountAge(Math.floor(user.id / 10000000)); // Rough estimate
+            setIsPremium(user.is_premium || false);
+        }
+    }, []);
+
+    useEffect(() => {
+        // Calculate total score
+        const ageScore = accountAge * 10; // 10 points per estimated year
+        const premiumScore = isPremium ? 1000 : 0;
+        const invitedFriendsScore = 84; // From your original data
+
+        setTotalScore(ageScore + premiumScore + invitedFriendsScore);
+    }, [accountAge, isPremium]);
 
     return (
         <div className="app">
             <header>
-                <h1>TAGS <span role="img"></span></h1>
+                <h1>TAGS <span role="img" aria-label="tag">🏷️</span></h1>
             </header>
 
             <div className="score-banner">
-                <span>Your Score</span>
+                <span>Your Score: {totalScore} TAGS</span>
             </div>
 
             <div className="follow-card">
@@ -36,11 +77,10 @@ const Tags: React.FC = () => {
             <h2>Your rewards</h2>
 
             <div className="rewards-list">
-                <RewardItem icon="✨" title="Account age" amount="3,573 TAGS"/>
-                <RewardItem icon="✅" title="Telegram Premium" amount="0"/>
-                <RewardItem icon="👥" title="Invited friends" amount="84 TAGS"/>
+                <RewardItem icon="✨" title="Account age" amount={`${accountAge * 10} TAGS`} />
+                <RewardItem icon="✅" title="Telegram Premium" amount={isPremium ? "1000 TAGS" : "0 TAGS"} />
+                <RewardItem icon="👥" title="Invited friends" amount="84 TAGS" />
             </div>
-
         </div>
     );
 };
