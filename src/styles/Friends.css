@@ -1,13 +1,59 @@
-.friends {
+.friends-page {
     background-color: #000;
     color: #fff;
     padding: 20px;
     min-height: 100vh;
 }
 
-.friends h1 {
-    font-size: 24px;
+.friends-page header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 20px;
+}
+
+.friends-page h1 {
+    font-size: 24px;
+    margin: 0;
+}
+
+.invite-banner {
+    background-color: #0088cc;
+    padding: 10px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.invite-icon {
+    margin-right: 10px;
+}
+
+.invite-card {
+    background-color: #222;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.invite-card p {
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+.invite-button {
+    background-color: #fff !important;
+    color: #000 !important;
+    width: 100%;
+    padding: 10px !important;
+    font-size: 16px !important;
+    text-transform: none !important;
+}
+
+.friends-page h2 {
+    font-size: 20px;
+    margin-bottom: 15px;
 }
 
 .friends-list {
@@ -24,31 +70,10 @@
     border-bottom: none;
 }
 
-.friend-info {
-    padding: 15px;
-    display: flex;
-    align-items: center;
+.MuiListItemText-primary {
+    font-weight: bold !important;
 }
 
-.friend-name {
-    font-weight: bold;
-}
-
-.invite-button {
-    margin-top: 20px;
-    padding: 10px 20px;
-    font-size: 16px;
-    background-color: #ffd700;
-    color: #000;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-}
-
-.invite-link {
-    margin-top: 20px;
-    padding: 10px;
-    background-color: #1e1e1e;
-    border-radius: 4px;
+.MuiListItemText-secondary {
+    color: #4CAF50 !important;
 }

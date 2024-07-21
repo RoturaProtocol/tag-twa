@@ -39,7 +39,6 @@ const Tags: React.FC = () => {
                 <RewardItem icon="✨" title="Account age" amount="3,573 TAGS"/>
                 <RewardItem icon="✅" title="Telegram Premium" amount="0"/>
                 <RewardItem icon="👥" title="Invited friends" amount="84 TAGS"/>
-                <RewardItem icon="✨" title="Connect Wallet" amount="1,000 TAGS"/>
             </div>
 
         </div>

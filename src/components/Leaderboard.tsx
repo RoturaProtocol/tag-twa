@@ -22,7 +22,7 @@ const leaderboardData: LeaderboardEntry[] = [
 const Leaderboard: React.FC = () => {
     return (
         <div className="leaderboard">
-            <h1>Telegram Tags Leaderboard</h1>
+            <h1>Leaderboard</h1>
             <div className="top-holder">
                 <Avatar className="avatar" style={{ backgroundColor: leaderboardData[0].color }}>
                     {leaderboardData[0].initials}
