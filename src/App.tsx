@@ -10,12 +10,12 @@ const App: React.FC = () => {
     const [value, setValue] = React.useState(0);
 
     return (<div>
-            <Router>
+            <Router basename="/tag-twa">
                 <div className="app">
                     <Routes>
                         <Route path="/" element={<Tags/>}/>
                         <Route path="/leaderboard" element={<Leaderboard/>}/>
-                        <Route path="/friends" element={<Friends />} />
+                        <Route path="/friends" element={<Friends/>}/>
                     </Routes>
 
                     <BottomNavigation
