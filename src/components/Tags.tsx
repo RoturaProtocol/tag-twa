@@ -69,7 +69,7 @@ const Tags: React.FC = () => {
     };
 
     const handleFollowClick = () => {
-        window.Telegram.WebApp.openTelegramLink('https://t.me/tagfusion');
+        window.Telegram.WebApp.openTelegramLink('tagfusion');
     };
 
     return (
