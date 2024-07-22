@@ -5,7 +5,6 @@ declare global {
     interface Window {
         Telegram: {
             WebApp: {
-                openTelegramLink: (url: string) => void;
                 initDataUnsafe: {
                     user?: {
                         id: number;
@@ -69,7 +68,7 @@ const Tags: React.FC = () => {
     };
 
     const handleFollowClick = () => {
-        window.Telegram.WebApp.openTelegramLink('tagfusion');
+        window.open('tg://resolve?domain=tagfusion', '_blank');
     };
 
     return (
