@@ -1,24 +1,15 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import '../styles/Tags.css';
-
-declare global {
-    interface Window {
-        Telegram: {
-            WebApp: {
-                initDataUnsafe: {
-                    user?: {
-                        id: number;
-                        first_name: string;
-                        last_name?: string;
-                        username?: string;
-                        language_code?: string;
-                        is_premium?: boolean;
-                    };
-                };
-            };
-        };
-    }
-}
+import axiosInstance from '../utils/axiosConfig';
+import { getTelegramWebApp } from '../utils/telegram';
+import {
+    CircularProgress,
+    Typography,
+    Alert,
+    AlertTitle,
+    Button
+} from '@mui/material';
+import { Refresh, Error as ErrorIcon } from '@mui/icons-material';
 
 interface RewardItemProps {
     icon: string;
@@ -26,7 +17,15 @@ interface RewardItemProps {
     amount: string;
 }
 
-const RewardItem: React.FC<RewardItemProps> = ({icon, title, amount}) => (
+interface UserScore {
+    tg_uid: string;
+    total_score: number;
+    account_age_score: number;
+    premium_score: number;
+    invited_score: number;
+}
+
+const RewardItem: React.FC<RewardItemProps> = ({ icon, title, amount }) => (
     <div className="reward-item">
         <span className="icon">{icon}</span>
         <span className="title">{title}</span>
@@ -35,36 +34,36 @@ const RewardItem: React.FC<RewardItemProps> = ({icon, title, amount}) => (
 );
 
 const Tags: React.FC = () => {
-    const [accountAge, setAccountAge] = useState<number>(0);
-    const [isPremium, setIsPremium] = useState<boolean>(false);
-    const [invitedFriendsScore, setInvitedFriendsScore] = useState<number>(0);
-    const [totalScore, setTotalScore] = useState<number>(0);
+    const [userScore, setUserScore] = useState<UserScore | null>(null);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        // Fetch user data from Telegram Web App
-        const user = window.Telegram.WebApp.initDataUnsafe.user;
-        if (user) {
-            setAccountAge(Math.floor(user.id / 10000000)); // Rough estimate
-            setIsPremium(user.is_premium || false);
-        }
-
-        // Fetch invited friends score from your backend
-        fetchInvitedFriendsScore();
+        fetchUserScore();
     }, []);
 
-    useEffect(() => {
-        // Calculate total score
-        const ageScore = accountAge * 10; // 10 points per estimated year
-        const premiumScore = isPremium ? 1000 : 0;
+    const fetchUserScore = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            const tgApp = getTelegramWebApp();
+            console.log('Telegram Web App:', tgApp); // Debug log
+            const user = tgApp.initDataUnsafe.user;
+            console.log('Telegram User:', user); // Debug log
 
-        setTotalScore(ageScore + premiumScore + invitedFriendsScore);
-    }, [accountAge, isPremium, invitedFriendsScore]);
+            if (!user || !user.id) {
+                throw new Error('Telegram user data not available');
+            }
 
-    const fetchInvitedFriendsScore = async () => {
-        // This should be replaced with an actual API call to your backend
-        // For now, we'll use a mock value
-        const mockScore = 84;
-        setInvitedFriendsScore(mockScore);
+            const tg_uid = user.id.toString();
+            const response = await axiosInstance.get<UserScore>(`/user_score?tg_uid=${tg_uid}`);
+            setUserScore(response.data);
+        } catch (error) {
+            console.error('Error fetching user score:', error);
+            setError(error instanceof Error ? error.message : 'Failed to fetch user score. Please try again.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleFollowClick = () => {
@@ -77,22 +76,53 @@ const Tags: React.FC = () => {
                 <h1>TAGS <span role="img" aria-label="tag">🏷️</span></h1>
             </header>
 
-            <div className="score-banner">
-                <span>Your Score: {totalScore} TAGS</span>
-            </div>
+            {loading ? (
+                <div className="loading-container">
+                    <CircularProgress />
+                    <Typography variant="body1">Loading your score...</Typography>
+                </div>
+            ) : error ? (
+                <Alert
+                    severity="error"
+                    icon={<ErrorIcon fontSize="inherit" />}
+                    action={
+                        <Button
+                            color="inherit"
+                            size="small"
+                            onClick={fetchUserScore}
+                            startIcon={<Refresh />}
+                        >
+                            RETRY
+                        </Button>
+                    }
+                >
+                    <AlertTitle>Error</AlertTitle>
+                    {error}
+                </Alert>
+            ) : !userScore ? (
+                <Typography variant="body1" className="no-data-message">
+                    No user data available. Please try again later.
+                </Typography>
+            ) : (
+                <>
+                    <div className="score-banner">
+                        <span>Your Score: {userScore.total_score} TAGS</span>
+                    </div>
 
-            <div className="follow-card">
-                <p>Stay updated with the latest news</p>
-                <button onClick={handleFollowClick}>Follow</button>
-            </div>
+                    <div className="follow-card">
+                        <p>Stay updated with the latest news</p>
+                        <button onClick={handleFollowClick}>Follow</button>
+                    </div>
 
-            <h2>Your rewards</h2>
+                    <h2>Your rewards</h2>
 
-            <div className="rewards-list">
-                <RewardItem icon="✨" title="Account age" amount={`${accountAge * 10} TAGS`}/>
-                <RewardItem icon="✅" title="Telegram Premium" amount={isPremium ? "1000 TAGS" : "0 TAGS"}/>
-                <RewardItem icon="👥" title="Invited friends" amount="84 TAGS"/>
-            </div>
+                    <div className="rewards-list">
+                        <RewardItem icon="✨" title="Account age" amount={`${userScore.account_age_score} TAGS`} />
+                        <RewardItem icon="✅" title="Telegram Premium" amount={`${userScore.premium_score} TAGS`} />
+                        <RewardItem icon="👥" title="Invited friends" amount={`${userScore.invited_score} TAGS`} />
+                    </div>
+                </>
+            )}
         </div>
     );
 };

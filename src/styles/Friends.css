@@ -77,3 +77,21 @@
 .MuiListItemText-secondary {
     color: #4CAF50 !important;
 }
+
+.no-friends-message {
+    text-align: center;
+    margin-top: 20px;
+    color: #888;
+}
+
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+}
+
+.loading-container .MuiCircularProgress-root {
+    margin-bottom: 16px;
+}
