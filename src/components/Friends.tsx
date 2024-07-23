@@ -1,43 +1,64 @@
 import React, { useState, useEffect } from 'react';
-import { Avatar, List, ListItem, ListItemAvatar, ListItemText, Button } from '@mui/material';
-import { People } from '@mui/icons-material';
+import {
+    Avatar,
+    List,
+    ListItem,
+    ListItemAvatar,
+    ListItemText,
+    Button,
+    Typography,
+    CircularProgress,
+    Alert,
+    AlertTitle
+} from '@mui/material';
+import { People, Refresh } from '@mui/icons-material';
+import axiosInstance from '../utils/axiosConfig';
 import '../styles/Friends.css';
 
 interface Friend {
-    name: string;
-    initials: string;
-    reward: number;
-    color: string;
+    tg_uid: string;
+    score: number;
 }
 
 const Friends: React.FC = () => {
-    const [inviteLink, setInviteLink] = useState<string>('');
     const [friendsData, setFriendsData] = useState<Friend[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        // Fetch friends data from your backend
         fetchFriendsData();
     }, []);
 
     const fetchFriendsData = async () => {
-        // This should be replaced with an actual API call
-        const mockData: Friend[] = [
-            { name: 'yulongdaren', initials: 'YU', reward: 42, color: '#2196f3' },
-            { name: 'wecashid', initials: 'WE', reward: 12, color: '#ff5722' },
-        ];
-        setFriendsData(mockData);
+        try {
+            setLoading(true);
+            setError(null);
+            const tg_uid = window.Telegram.WebApp.initDataUnsafe.user?.id.toString();
+            const response = await axiosInstance.get<Friend[]>(`/invited_friends?tg_uid=${tg_uid}`);
+            setFriendsData(response.data);
+        } catch (error) {
+            console.error('Error fetching friends data:', error);
+            setError('Failed to fetch friends data. Please try again.');
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const generateInviteLink = async () => {
-        // This should be replaced with an actual API call to your backend
-        const userId = window.Telegram.WebApp.initDataUnsafe.user?.id;
-        const mockInviteLink = `https://t.me/YourBot?start=${userId}`;
-        setInviteLink(mockInviteLink);
+    const getInviteLink = () => {
+        const tg_uid = window.Telegram.WebApp.initDataUnsafe.user?.id.toString();
+        return `https://t.me/tag_fusion_bot?start=${tg_uid}`;
     };
 
     const copyInviteLink = () => {
+        const inviteLink = getInviteLink();
         navigator.clipboard.writeText(inviteLink);
         // You might want to show a notification that the link was copied
+    };
+
+    const generateAvatarProps = (tg_uid: string) => {
+        const initials = tg_uid.substring(0, 2).toUpperCase();
+        const color = `#${parseInt(tg_uid).toString(16).padStart(6, '0').slice(-6)}`;
+        return { initials, color };
     };
 
     return (
@@ -53,35 +74,57 @@ const Friends: React.FC = () => {
 
             <div className="invite-card">
                 <p>Invite friends and get more Tags</p>
-                {!inviteLink ? (
-                    <Button variant="contained" className="invite-button" onClick={generateInviteLink}>
-                        Generate Invite Link
-                    </Button>
-                ) : (
-                    <>
-                        <input type="text" value={inviteLink} readOnly className="invite-link-input" />
-                        <Button variant="contained" className="invite-button" onClick={copyInviteLink}>
-                            Copy Invite Link
-                        </Button>
-                    </>
-                )}
+                <Button
+                    variant="contained"
+                    className="invite-button"
+                    onClick={copyInviteLink}
+                    disabled={loading}
+                >
+                    Copy Invite Link
+                </Button>
             </div>
 
             <h2>Your invited friends</h2>
 
-            <List className="friends-list">
-                {friendsData.map((friend) => (
-                    <ListItem key={friend.name} className="friend-item">
-                        <ListItemAvatar>
-                            <Avatar style={{ backgroundColor: friend.color }}>{friend.initials}</Avatar>
-                        </ListItemAvatar>
-                        <ListItemText
-                            primary={friend.name}
-                            secondary={`+${friend.reward} Tags`}
-                        />
-                    </ListItem>
-                ))}
-            </List>
+            {loading ? (
+                <div className="loading-container">
+                    <CircularProgress />
+                    <Typography variant="body1">Loading your friends list...</Typography>
+                </div>
+            ) : error ? (
+                <Alert
+                    severity="error"
+                    action={
+                        <Button color="inherit" size="small" onClick={fetchFriendsData}>
+                            <Refresh /> Retry
+                        </Button>
+                    }
+                >
+                    <AlertTitle>Error</AlertTitle>
+                    {error}
+                </Alert>
+            ) : friendsData.length > 0 ? (
+                <List className="friends-list">
+                    {friendsData.map((friend) => {
+                        const { initials, color } = generateAvatarProps(friend.tg_uid);
+                        return (
+                            <ListItem key={friend.tg_uid} className="friend-item">
+                                <ListItemAvatar>
+                                    <Avatar style={{ backgroundColor: color }}>{initials}</Avatar>
+                                </ListItemAvatar>
+                                <ListItemText
+                                    primary={`User ${friend.tg_uid}`}
+                                    secondary={`+${friend.score} Tags`}
+                                />
+                            </ListItem>
+                        );
+                    })}
+                </List>
+            ) : (
+                <Typography variant="body1" className="no-friends-message">
+                    You haven't invited any friends yet. Share your invite link to get started!
+                </Typography>
+            )}
         </div>
     );
 };

@@ -1,18 +1,12 @@
-body {
-    margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    background-color: #000;
-    color: #fff;
-}
-
 .app {
     max-width: 600px;
     margin: 0 auto;
     padding: 20px;
+    background-color: #000;
+    color: #fff;
+    min-height: calc(100vh - 56px); /* Adjust for bottom navigation */
+    display: flex;
+    flex-direction: column;
 }
 
 header {
@@ -47,7 +41,8 @@ header {
 }
 
 .rewards-list {
-    margin-bottom: 60px;
+    margin-bottom: 20px;
+    flex-grow: 1;
 }
 
 .reward-item {
@@ -69,18 +64,86 @@ header {
     font-weight: bold;
 }
 
-.bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background-color: #222 !important;
+/* Styles for loading, error, and no-data states */
+.loading-container,
+.no-data-message {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
 }
 
-.bottom-nav .MuiBottomNavigationAction-root {
+.loading-container .MuiCircularProgress-root {
+    margin-bottom: 16px;
+}
+
+/* Updated error alert styles */
+.MuiAlert-root {
+    margin: 20px 0;
+    width: calc(100% - 40px);
+    max-width: 560px;
+    background-color: #ffe6e6 !important;
+    color: #610404 !important;
+    border-radius: 10px;
+    box-shadow: none;
+    padding: 16px;
+}
+
+.MuiAlert-icon {
+    color: #610404 !important;
+}
+
+.MuiAlert-message {
+    padding: 8px 0;
+}
+
+.MuiAlert-action {
+    align-items: flex-end;
+    padding-top: 0;
+}
+
+.MuiButton-root {
+    text-transform: none;
+    color: #610404 !important;
+    font-weight: bold;
+}
+
+.MuiAlert-standardError {
+    background-color: #ffe6e6 !important;
+    color: #610404 !important;
+}
+
+.MuiAlertTitle-root {
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+/* Add these new styles for the bottom navigation */
+.MuiBottomNavigation-root {
+    background-color: #1e1e1e !important;
+    border-top: 1px solid #333;
+}
+
+.MuiBottomNavigationAction-root {
     color: #888 !important;
 }
 
-.bottom-nav .Mui-selected {
+.MuiBottomNavigationAction-root.Mui-selected {
     color: #fff !important;
+}
+
+.MuiSvgIcon-root {
+    fill: currentColor;
+}
+
+/* Ensure the app content doesn't overlap with the navigation bar */
+.app {
+    padding-bottom: 56px; /* Height of the bottom navigation bar */
+}
+
+/* Adjust the min-height to account for the navigation bar */
+.app {
+    min-height: calc(100vh - 56px);
 }
