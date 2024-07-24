@@ -25,7 +25,6 @@ const Friends: React.FC = () => {
     const [friendsData, setFriendsData] = useState<Friend[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
-    const [userStructure, setUserStructure] = useState<string>('');
 
     useEffect(() => {
         fetchFriendsData();
@@ -38,13 +37,7 @@ const Friends: React.FC = () => {
 
             // Wait for the Telegram WebApp to be ready
             WebApp.ready();
-
             const user = WebApp.initDataUnsafe.user;
-            const userString = JSON.stringify(user, null, 2);
-            setUserStructure(userString);
-
-
-            console.log('Telegram User:', user); // Debug log
 
             if (!user || !user.id) {
                 throw new Error('Telegram user data not available');
@@ -127,12 +120,6 @@ const Friends: React.FC = () => {
                 >
                     <AlertTitle>Error</AlertTitle>
                     {error}
-                    {userStructure && (
-                        <pre style={{whiteSpace: 'pre-wrap', wordBreak: 'break-word'}}>
-                            User structure:
-                            {userStructure}
-                        </pre>
-                    )}
                 </Alert>
             ) : friendsData.length > 0 ? (
                 <List className="friends-list">

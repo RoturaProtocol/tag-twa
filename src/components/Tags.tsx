@@ -37,7 +37,6 @@ const Tags: React.FC = () => {
     const [userScore, setUserScore] = useState<UserScore | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
-    const [userStructure, setUserStructure] = useState<string>('');
 
 
     useEffect(() => {
@@ -50,10 +49,7 @@ const Tags: React.FC = () => {
             setError(null);
 
             WebApp.ready();
-
             const user = WebApp.initDataUnsafe.user;
-            const userString = JSON.stringify(user, null, 2);
-            setUserStructure(userString);
 
             if (!user || !user.id) {
                 throw new Error('Telegram user data not available');
@@ -102,12 +98,6 @@ const Tags: React.FC = () => {
                 >
                     <AlertTitle>Error</AlertTitle>
                     {error}
-                    {userStructure && (
-                        <pre style={{whiteSpace: 'pre-wrap', wordBreak: 'break-word'}}>
-                            User structure:
-                            {userStructure}
-                        </pre>
-                    )}
                 </Alert>
             ) : !userScore ? (
                 <Typography variant="body1" className="no-data-message">

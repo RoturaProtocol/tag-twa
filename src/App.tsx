@@ -4,7 +4,8 @@ import {BottomNavigation, BottomNavigationAction} from '@mui/material';
 import {Home, Leaderboard as LeaderboardIcon, People} from '@mui/icons-material';
 import Tags from './components/Tags';
 import Leaderboard from './components/Leaderboard';
-import Friends from "./components/Friends.tsx";
+import Friends from "./components/Friends";
+import "./styles/App.css"
 
 const App: React.FC = () => {
     const [value, setValue] = React.useState(0);
