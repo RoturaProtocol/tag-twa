@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect} from 'react';
 import {
     Avatar,
     List,
@@ -11,9 +11,9 @@ import {
     Alert,
     AlertTitle
 } from '@mui/material';
-import { People, Refresh, Error as ErrorIcon } from '@mui/icons-material';
+import {People, Refresh, Error as ErrorIcon} from '@mui/icons-material';
 import axiosInstance from '../utils/axiosConfig';
-import { getTelegramWebApp } from '../utils/telegram';
+import WebApp from '@twa-dev/sdk';
 import '../styles/Friends.css';
 
 interface Friend {
@@ -25,6 +25,7 @@ const Friends: React.FC = () => {
     const [friendsData, setFriendsData] = useState<Friend[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+    const [userStructure, setUserStructure] = useState<string>('');
 
     useEffect(() => {
         fetchFriendsData();
@@ -34,9 +35,15 @@ const Friends: React.FC = () => {
         try {
             setLoading(true);
             setError(null);
-            const tgApp = getTelegramWebApp();
-            console.log('Telegram Web App:', tgApp); // Debug log
-            const user = tgApp.initDataUnsafe.user;
+
+            // Wait for the Telegram WebApp to be ready
+            WebApp.ready();
+
+            const user = WebApp.initDataUnsafe.user;
+            const userString = JSON.stringify(user, null, 2);
+            setUserStructure(userString);
+
+
             console.log('Telegram User:', user); // Debug log
 
             if (!user || !user.id) {
@@ -55,8 +62,7 @@ const Friends: React.FC = () => {
     };
 
     const getInviteLink = () => {
-        const tgApp = getTelegramWebApp();
-        const user = tgApp.initDataUnsafe.user;
+        const user = WebApp.initDataUnsafe.user;
         return user ? `https://t.me/tag_fusion_bot?start=${user.id}` : '';
     };
 
@@ -64,14 +70,14 @@ const Friends: React.FC = () => {
         const inviteLink = getInviteLink();
         if (inviteLink) {
             navigator.clipboard.writeText(inviteLink);
-            // You might want to show a notification that the link was copied
+            WebApp.showAlert('Invite link copied to clipboard!');
         }
     };
 
     const generateAvatarProps = (tg_uid: string) => {
         const initials = tg_uid.substring(0, 2).toUpperCase();
         const color = `#${parseInt(tg_uid).toString(16).padStart(6, '0').slice(-6)}`;
-        return { initials, color };
+        return {initials, color};
     };
 
     return (
@@ -81,7 +87,7 @@ const Friends: React.FC = () => {
             </header>
 
             <div className="invite-banner">
-                <People className="invite-icon" />
+                <People className="invite-icon"/>
                 <span>Invite</span>
             </div>
 
@@ -101,19 +107,19 @@ const Friends: React.FC = () => {
 
             {loading ? (
                 <div className="loading-container">
-                    <CircularProgress />
+                    <CircularProgress/>
                     <Typography variant="body1">Loading your friends list...</Typography>
                 </div>
             ) : error ? (
                 <Alert
                     severity="error"
-                    icon={<ErrorIcon fontSize="inherit" />}
+                    icon={<ErrorIcon fontSize="inherit"/>}
                     action={
                         <Button
                             color="inherit"
                             size="small"
                             onClick={fetchFriendsData}
-                            startIcon={<Refresh />}
+                            startIcon={<Refresh/>}
                         >
                             RETRY
                         </Button>
@@ -121,15 +127,21 @@ const Friends: React.FC = () => {
                 >
                     <AlertTitle>Error</AlertTitle>
                     {error}
+                    {userStructure && (
+                        <pre style={{whiteSpace: 'pre-wrap', wordBreak: 'break-word'}}>
+                            User structure:
+                            {userStructure}
+                        </pre>
+                    )}
                 </Alert>
             ) : friendsData.length > 0 ? (
                 <List className="friends-list">
                     {friendsData.map((friend) => {
-                        const { initials, color } = generateAvatarProps(friend.tg_uid);
+                        const {initials, color} = generateAvatarProps(friend.tg_uid);
                         return (
                             <ListItem key={friend.tg_uid} className="friend-item">
                                 <ListItemAvatar>
-                                    <Avatar style={{ backgroundColor: color }}>{initials}</Avatar>
+                                    <Avatar style={{backgroundColor: color}}>{initials}</Avatar>
                                 </ListItemAvatar>
                                 <ListItemText
                                     primary={`User ${friend.tg_uid}`}

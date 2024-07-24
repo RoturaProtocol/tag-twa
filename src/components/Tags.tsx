@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect} from 'react';
 import '../styles/Tags.css';
 import axiosInstance from '../utils/axiosConfig';
-import { getTelegramWebApp } from '../utils/telegram';
+import WebApp from '@twa-dev/sdk';
 import {
     CircularProgress,
     Typography,
@@ -9,7 +9,7 @@ import {
     AlertTitle,
     Button
 } from '@mui/material';
-import { Refresh, Error as ErrorIcon } from '@mui/icons-material';
+import {Refresh, Error as ErrorIcon} from '@mui/icons-material';
 
 interface RewardItemProps {
     icon: string;
@@ -25,7 +25,7 @@ interface UserScore {
     invited_score: number;
 }
 
-const RewardItem: React.FC<RewardItemProps> = ({ icon, title, amount }) => (
+const RewardItem: React.FC<RewardItemProps> = ({icon, title, amount}) => (
     <div className="reward-item">
         <span className="icon">{icon}</span>
         <span className="title">{title}</span>
@@ -37,6 +37,8 @@ const Tags: React.FC = () => {
     const [userScore, setUserScore] = useState<UserScore | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+    const [userStructure, setUserStructure] = useState<string>('');
+
 
     useEffect(() => {
         fetchUserScore();
@@ -46,10 +48,12 @@ const Tags: React.FC = () => {
         try {
             setLoading(true);
             setError(null);
-            const tgApp = getTelegramWebApp();
-            console.log('Telegram Web App:', tgApp); // Debug log
-            const user = tgApp.initDataUnsafe.user;
-            console.log('Telegram User:', user); // Debug log
+
+            WebApp.ready();
+
+            const user = WebApp.initDataUnsafe.user;
+            const userString = JSON.stringify(user, null, 2);
+            setUserStructure(userString);
 
             if (!user || !user.id) {
                 throw new Error('Telegram user data not available');
@@ -67,7 +71,7 @@ const Tags: React.FC = () => {
     };
 
     const handleFollowClick = () => {
-        window.open('tg://resolve?domain=tagfusion', '_blank');
+        WebApp.openTelegramLink('https://t.me/tagfusion');
     };
 
     return (
@@ -78,19 +82,19 @@ const Tags: React.FC = () => {
 
             {loading ? (
                 <div className="loading-container">
-                    <CircularProgress />
+                    <CircularProgress/>
                     <Typography variant="body1">Loading your score...</Typography>
                 </div>
             ) : error ? (
                 <Alert
                     severity="error"
-                    icon={<ErrorIcon fontSize="inherit" />}
+                    icon={<ErrorIcon fontSize="inherit"/>}
                     action={
                         <Button
                             color="inherit"
                             size="small"
                             onClick={fetchUserScore}
-                            startIcon={<Refresh />}
+                            startIcon={<Refresh/>}
                         >
                             RETRY
                         </Button>
@@ -98,6 +102,12 @@ const Tags: React.FC = () => {
                 >
                     <AlertTitle>Error</AlertTitle>
                     {error}
+                    {userStructure && (
+                        <pre style={{whiteSpace: 'pre-wrap', wordBreak: 'break-word'}}>
+                            User structure:
+                            {userStructure}
+                        </pre>
+                    )}
                 </Alert>
             ) : !userScore ? (
                 <Typography variant="body1" className="no-data-message">
@@ -117,9 +127,9 @@ const Tags: React.FC = () => {
                     <h2>Your rewards</h2>
 
                     <div className="rewards-list">
-                        <RewardItem icon="✨" title="Account age" amount={`${userScore.account_age_score} TAGS`} />
-                        <RewardItem icon="✅" title="Telegram Premium" amount={`${userScore.premium_score} TAGS`} />
-                        <RewardItem icon="👥" title="Invited friends" amount={`${userScore.invited_score} TAGS`} />
+                        <RewardItem icon="✨" title="Account age" amount={`${userScore.account_age_score} TAGS`}/>
+                        <RewardItem icon="✅" title="Telegram Premium" amount={`${userScore.premium_score} TAGS`}/>
+                        <RewardItem icon="👥" title="Invited friends" amount={`${userScore.invited_score} TAGS`}/>
                     </div>
                 </>
             )}
