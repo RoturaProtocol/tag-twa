@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Define the base URL for your API
-const API_BASE_URL = 'http://138.3.222.185';
+const API_BASE_URL = 'https://tg.tagfusion.org';
 
 // Create an Axios instance with custom config
 const axiosInstance = axios.create({
