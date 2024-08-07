@@ -67,7 +67,7 @@ const Tags: React.FC = () => {
     };
 
     const handleFollowClick = () => {
-        WebApp.openTelegramLink('https://t.me/tagfusion');
+        WebApp.openTelegramLink('https://t.me/tele_tags_dao');
     };
 
     return (
