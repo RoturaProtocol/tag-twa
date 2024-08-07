@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Avatar,
     List,
@@ -9,9 +9,10 @@ import {
     Typography,
     CircularProgress,
     Alert,
-    AlertTitle
+    AlertTitle,
+    Chip
 } from '@mui/material';
-import {People, Refresh, Error as ErrorIcon} from '@mui/icons-material';
+import { People, Refresh, Error as ErrorIcon } from '@mui/icons-material';
 import axiosInstance from '../utils/axiosConfig';
 import WebApp from '@twa-dev/sdk';
 import '../styles/Friends.css';
@@ -19,6 +20,7 @@ import '../styles/Friends.css';
 interface Friend {
     tg_uid: string;
     score: number;
+    level: number;
 }
 
 const Friends: React.FC = () => {
@@ -35,7 +37,6 @@ const Friends: React.FC = () => {
             setLoading(true);
             setError(null);
 
-            // Wait for the Telegram WebApp to be ready
             WebApp.ready();
             const user = WebApp.initDataUnsafe.user;
 
@@ -70,7 +71,16 @@ const Friends: React.FC = () => {
     const generateAvatarProps = (tg_uid: string) => {
         const initials = tg_uid.substring(0, 2).toUpperCase();
         const color = `#${parseInt(tg_uid).toString(16).padStart(6, '0').slice(-6)}`;
-        return {initials, color};
+        return { initials, color };
+    };
+
+    const getLevelColor = (level: number) => {
+        switch (level) {
+            case 1: return 'primary';
+            case 2: return 'secondary';
+            case 3: return 'success';
+            default: return 'default';
+        }
     };
 
     return (
@@ -80,7 +90,7 @@ const Friends: React.FC = () => {
             </header>
 
             <div className="invite-banner">
-                <People className="invite-icon"/>
+                <People className="invite-icon" />
                 <span>Invite</span>
             </div>
 
@@ -100,19 +110,19 @@ const Friends: React.FC = () => {
 
             {loading ? (
                 <div className="loading-container">
-                    <CircularProgress/>
+                    <CircularProgress />
                     <Typography variant="body1">Loading your friends list...</Typography>
                 </div>
             ) : error ? (
                 <Alert
                     severity="error"
-                    icon={<ErrorIcon fontSize="inherit"/>}
+                    icon={<ErrorIcon fontSize="inherit" />}
                     action={
                         <Button
                             color="inherit"
                             size="small"
                             onClick={fetchFriendsData}
-                            startIcon={<Refresh/>}
+                            startIcon={<Refresh />}
                         >
                             RETRY
                         </Button>
@@ -124,15 +134,20 @@ const Friends: React.FC = () => {
             ) : friendsData.length > 0 ? (
                 <List className="friends-list">
                     {friendsData.map((friend) => {
-                        const {initials, color} = generateAvatarProps(friend.tg_uid);
+                        const { initials, color } = generateAvatarProps(friend.tg_uid);
                         return (
                             <ListItem key={friend.tg_uid} className="friend-item">
                                 <ListItemAvatar>
-                                    <Avatar style={{backgroundColor: color}}>{initials}</Avatar>
+                                    <Avatar style={{ backgroundColor: color }}>{initials}</Avatar>
                                 </ListItemAvatar>
                                 <ListItemText
                                     primary={`User ${friend.tg_uid}`}
                                     secondary={`+${friend.score} Tags`}
+                                />
+                                <Chip
+                                    label={`Level ${friend.level}`}
+                                    color={getLevelColor(friend.level)}
+                                    size="small"
                                 />
                             </ListItem>
                         );
