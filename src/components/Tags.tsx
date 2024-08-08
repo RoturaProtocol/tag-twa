@@ -110,7 +110,7 @@ const Tags: React.FC = () => {
                     </div>
 
                     <div className="follow-card">
-                        <p>Stay updated with the latest news</p>
+                        <p>Stay with us to get more rewards!</p>
                         <button onClick={handleFollowClick}>Join</button>
                     </div>
 
