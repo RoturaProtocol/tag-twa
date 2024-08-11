@@ -19,7 +19,7 @@ import {
 import { People, Refresh, Error as ErrorIcon, ContentCopy } from '@mui/icons-material';
 import axiosInstance from '../utils/axiosConfig';
 import WebApp from '@twa-dev/sdk';
-import './Friends.css';
+import '../styles/Friends.css';
 
 interface Friend {
     tg_uid: string;
