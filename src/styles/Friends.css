@@ -1,97 +1,114 @@
 .friends-page {
-    background-color: #000;
-    color: #fff;
     padding: 20px;
-    min-height: 100vh;
+    background-color: #000000;
+    color: #ffffff;
+    min-height: calc(100vh - 56px);
 }
 
-.friends-page header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.page-title, .section-title {
+    color: #ffffff;
+}
+
+.invite-section {
+    background-color: #1e1e1e !important;
     margin-bottom: 20px;
-}
-
-.friends-page h1 {
-    font-size: 24px;
-    margin: 0;
 }
 
 .invite-banner {
     background-color: #0088cc;
     padding: 10px;
-    border-radius: 10px;
     display: flex;
     align-items: center;
-    margin-bottom: 20px;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
 }
 
 .invite-icon {
     margin-right: 10px;
+    color: #ffffff;
 }
 
-.invite-card {
-    background-color: #222;
-    padding: 20px;
-    border-radius: 10px;
-    margin-bottom: 20px;
+.invite-title {
+    color: #ffffff;
 }
 
-.invite-card p {
-    margin-top: 0;
-    margin-bottom: 15px;
+.invite-text, .invite-caption {
+    color: #ffffff;
 }
 
-.invite-button {
-    background-color: #fff !important;
-    color: #000 !important;
-    width: 100%;
-    padding: 10px !important;
-    font-size: 16px !important;
-    text-transform: none !important;
+.invite-link-input {
+    background-color: #333333;
+    color: #ffffff !important;
 }
 
-.friends-page h2 {
-    font-size: 20px;
-    margin-bottom: 15px;
+.invite-link-input input {
+    color: #ffffff !important;
+}
+
+.copy-button {
+    color: #0088cc !important;
 }
 
 .friends-list {
     background-color: #1e1e1e;
-    border-radius: 10px;
+    border-radius: 4px;
     overflow: hidden;
 }
 
 .friend-item {
-    border-bottom: 1px solid #333;
+    border-bottom: 1px solid #333333;
 }
 
 .friend-item:last-child {
     border-bottom: none;
 }
 
-.MuiListItemText-primary {
-    font-weight: bold !important;
+.friend-name {
+    color: #ffffff;
 }
 
-.MuiListItemText-secondary {
-    color: #4CAF50 !important;
+.friend-score {
+    color: #4caf50;
 }
 
 .no-friends-message {
     text-align: center;
     margin-top: 20px;
-    color: #888;
+    color: #888888;
 }
 
-.loading-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 200px;
+.loading-text {
+    color: #ffffff;
 }
 
-.loading-container .MuiCircularProgress-root {
-    margin-bottom: 16px;
+/* Style overrides for Material-UI components */
+.MuiTextField-root {
+    background-color: #333333;
+    border-radius: 4px;
+}
+
+.MuiOutlinedInput-root {
+    color: #ffffff;
+}
+
+.MuiOutlinedInput-notchedOutline {
+    border-color: #555555 !important;
+}
+
+.MuiChip-root {
+    margin-left: 8px;
+}
+
+/* Alert styles */
+.MuiAlert-standardError {
+    background-color: #f44336;
+    color: #ffffff;
+}
+
+.MuiAlert-standardError .MuiAlert-icon {
+    color: #ffffff;
+}
+
+.MuiAlert-standardError .MuiButton-root {
+    color: #ffffff;
 }
