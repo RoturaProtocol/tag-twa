@@ -61,6 +61,7 @@ const Friends: React.FC = () => {
     const generateInviteLink = () => {
         const user = WebApp.initDataUnsafe.user;
         if (user && user.id) {
+            // set link
             setInviteLink(`https://t.me/tag_fusion_bot?start=${user.id}`);
         }
     };
