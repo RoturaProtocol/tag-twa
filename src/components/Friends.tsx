@@ -10,12 +10,16 @@ import {
     CircularProgress,
     Alert,
     AlertTitle,
-    Chip
+    Chip,
+    TextField,
+    Box,
+    Paper,
+    IconButton
 } from '@mui/material';
-import { People, Refresh, Error as ErrorIcon } from '@mui/icons-material';
+import { People, Refresh, Error as ErrorIcon, ContentCopy } from '@mui/icons-material';
 import axiosInstance from '../utils/axiosConfig';
 import WebApp from '@twa-dev/sdk';
-import '../styles/Friends.css';
+import './Friends.css';
 
 interface Friend {
     tg_uid: string;
@@ -27,23 +31,22 @@ const Friends: React.FC = () => {
     const [friendsData, setFriendsData] = useState<Friend[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+    const [inviteLink, setInviteLink] = useState<string>('');
 
     useEffect(() => {
         fetchFriendsData();
+        generateInviteLink();
     }, []);
 
     const fetchFriendsData = async () => {
         try {
             setLoading(true);
             setError(null);
-
             WebApp.ready();
             const user = WebApp.initDataUnsafe.user;
-
             if (!user || !user.id) {
                 throw new Error('Telegram user data not available');
             }
-
             const tg_uid = user.id.toString();
             const response = await axiosInstance.get<Friend[]>(`/invited_friends?tg_uid=${tg_uid}`);
             setFriendsData(response.data);
@@ -55,16 +58,23 @@ const Friends: React.FC = () => {
         }
     };
 
-    const getInviteLink = () => {
+    const generateInviteLink = () => {
         const user = WebApp.initDataUnsafe.user;
-        return user ? `https://t.me/tag_fusion_bot?start=${user.id}` : '';
+        if (user && user.id) {
+            setInviteLink(`https://t.me/tag_fusion_bot?start=${user.id}`);
+        }
     };
 
     const copyInviteLink = () => {
-        const inviteLink = getInviteLink();
         if (inviteLink) {
-            navigator.clipboard.writeText(inviteLink);
-            WebApp.showAlert('Invite link copied to clipboard!');
+            navigator.clipboard.writeText(inviteLink)
+                .then(() => {
+                    WebApp.showAlert('Invite link copied to clipboard!');
+                })
+                .catch((err) => {
+                    console.error('Failed to copy: ', err);
+                    WebApp.showAlert('Failed to copy. Please copy the link manually.');
+                });
         }
     };
 
@@ -76,43 +86,65 @@ const Friends: React.FC = () => {
 
     const getLevelColor = (level: number) => {
         switch (level) {
-            case 1: return 'primary';
-            case 2: return 'secondary';
-            case 3: return 'success';
-            default: return 'default';
+            case 1: return '#2196f3'; // blue
+            case 2: return '#9c27b0'; // purple
+            case 3: return '#4caf50'; // green
+            default: return '#757575'; // grey
         }
     };
 
     return (
         <div className="friends-page">
-            <header>
-                <h1>Friends <span role="img" aria-label="friends">👥</span></h1>
-            </header>
+            <Typography variant="h4" component="h1" gutterBottom className="page-title">
+                Friends <span role="img" aria-label="friends">👥</span>
+            </Typography>
 
-            <div className="invite-banner">
-                <People className="invite-icon" />
-                <span>Invite</span>
-            </div>
+            <Paper elevation={3} className="invite-section">
+                <Box className="invite-banner">
+                    <People className="invite-icon" />
+                    <Typography variant="h6" className="invite-title">Invite</Typography>
+                </Box>
 
-            <div className="invite-card">
-                <p>Invite friends and get more Tags</p>
-                <Button
-                    variant="contained"
-                    className="invite-button"
-                    onClick={copyInviteLink}
-                    disabled={loading}
-                >
-                    Copy Invite Link
-                </Button>
-            </div>
+                <Box p={2}>
+                    <Typography variant="body1" gutterBottom className="invite-text">
+                        Invite friends and get more Tags
+                    </Typography>
+                    <Box display="flex" alignItems="center" mb={1}>
+                        <TextField
+                            fullWidth
+                            variant="outlined"
+                            value={inviteLink}
+                            InputProps={{
+                                readOnly: true,
+                                className: "invite-link-input"
+                            }}
+                            size="small"
+                        />
+                        <IconButton
+                            onClick={copyInviteLink}
+                            color="primary"
+                            disabled={loading}
+                            sx={{ ml: 1 }}
+                            className="copy-button"
+                        >
+                            <ContentCopy />
+                        </IconButton>
+                    </Box>
+                    <Typography variant="caption" className="invite-caption">
+                        Share this link with your friends to invite them!
+                    </Typography>
+                </Box>
+            </Paper>
 
-            <h2>Your invited friends</h2>
+            <Typography variant="h5" component="h2" gutterBottom sx={{ mt: 3 }} className="section-title">
+                Your invited friends
+            </Typography>
 
             {loading ? (
-                <div className="loading-container">
+                <Box display="flex" flexDirection="column" alignItems="center" my={4}>
                     <CircularProgress />
-                    <Typography variant="body1">Loading your friends list...</Typography>
-                </div>
+                    <Typography variant="body1" mt={2} className="loading-text">Loading your friends list...</Typography>
+                </Box>
             ) : error ? (
                 <Alert
                     severity="error"
@@ -141,12 +173,15 @@ const Friends: React.FC = () => {
                                     <Avatar style={{ backgroundColor: color }}>{initials}</Avatar>
                                 </ListItemAvatar>
                                 <ListItemText
-                                    primary={`User ${friend.tg_uid}`}
-                                    secondary={`+${friend.score} Tags`}
+                                    primary={<span className="friend-name">User {friend.tg_uid}</span>}
+                                    secondary={<span className="friend-score">+{friend.score} Tags</span>}
                                 />
                                 <Chip
                                     label={`Level ${friend.level}`}
-                                    color={getLevelColor(friend.level)}
+                                    style={{
+                                        backgroundColor: getLevelColor(friend.level),
+                                        color: '#ffffff'
+                                    }}
                                     size="small"
                                 />
                             </ListItem>
