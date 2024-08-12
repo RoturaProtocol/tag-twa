@@ -7,7 +7,8 @@ import {
     Typography,
     Alert,
     AlertTitle,
-    Button
+    Button,
+    Box
 } from '@mui/material';
 import { Refresh, Error as ErrorIcon } from '@mui/icons-material';
 
@@ -39,17 +40,16 @@ const Tags: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [xFollowButtonLoaded, setXFollowButtonLoaded] = useState(false);
     const [currentPage, setCurrentPage] = useState(0);
-    const totalPages = 2; // Assuming we have 2 cards
+    const totalPages = 2;
     const autoScrollInterval = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
         fetchUserScore();
         loadXFollowButton();
 
-        // Set up auto-scrolling
         autoScrollInterval.current = setInterval(() => {
             setCurrentPage((prevPage) => (prevPage + 1) % totalPages);
-        }, 5000); // Change page every 5 seconds
+        }, 5000);
 
         return () => {
             if (autoScrollInterval.current) {
@@ -109,7 +109,6 @@ const Tags: React.FC = () => {
 
     const handleDotClick = (index: number) => {
         setCurrentPage(index);
-        // Reset auto-scroll timer when manually changing page
         if (autoScrollInterval.current) {
             clearInterval(autoScrollInterval.current);
         }
@@ -154,13 +153,15 @@ const Tags: React.FC = () => {
             ) : (
                 <>
                     <div className="score-banner">
-                        <span>Your Score: {userScore.total_score} TAGS</span>
+                        <Typography variant="h6">Your Score: {userScore.total_score.toLocaleString()} TAGS</Typography>
                     </div>
 
-                    <div className="scrollable-cards-container">
+                    <Box className="scrollable-cards-container">
                         <div className="scrollable-cards">
-                            <div className="follow-card">
-                                <p>Follow us on X for the latest updates!</p>
+                            <Box className="follow-card">
+                                <Typography variant="body1" className="follow-text">
+                                    Follow us on X for the latest updates!
+                                </Typography>
                                 {xFollowButtonLoaded ? (
                                     <a
                                         href="https://x.com/tagfusion0707"
@@ -173,12 +174,21 @@ const Tags: React.FC = () => {
                                 ) : (
                                     <CircularProgress size={24} />
                                 )}
-                            </div>
+                            </Box>
 
-                            <div className="follow-card">
-                                <p>Stay with us to get more rewards!</p>
-                                <button onClick={handleFollowClick}>Join</button>
-                            </div>
+                            <Box className="follow-card">
+                                <Typography variant="body1" className="follow-text">
+                                    Stay with us to get more rewards!
+                                </Typography>
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={handleFollowClick}
+                                    className="join-button"
+                                >
+                                    JOIN
+                                </Button>
+                            </Box>
                         </div>
                         <div className="pagination-dots">
                             {[...Array(totalPages)].map((_, index) => (
@@ -186,17 +196,17 @@ const Tags: React.FC = () => {
                                     key={index}
                                     className={`dot ${index === currentPage ? 'active' : ''}`}
                                     onClick={() => handleDotClick(index)}
-                                ></span>
+                                />
                             ))}
                         </div>
-                    </div>
+                    </Box>
 
-                    <h2>Your rewards</h2>
+                    <Typography variant="h5" className="rewards-title">Your rewards</Typography>
 
                     <div className="rewards-list">
-                        <RewardItem icon="✨" title="Account age" amount={`${userScore.account_age_score} TAGS`} />
-                        <RewardItem icon="✅" title="Telegram Premium" amount={`${userScore.premium_score} TAGS`} />
-                        <RewardItem icon="👥" title="Invited friends" amount={`${userScore.invited_score} TAGS`} />
+                        <RewardItem icon="✨" title="Account age" amount={`${userScore.account_age_score.toLocaleString()} TAGS`} />
+                        <RewardItem icon="✅" title="Telegram Premium" amount={`${userScore.premium_score.toLocaleString()} TAGS`} />
+                        <RewardItem icon="👥" title="Invited friends" amount={`${userScore.invited_score.toLocaleString()} TAGS`} />
                     </div>
                 </>
             )}

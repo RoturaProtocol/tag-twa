@@ -4,7 +4,7 @@
     padding: 20px;
     background-color: #000;
     color: #fff;
-    min-height: calc(100vh - 56px); /* Maintain space for bottom navigation */
+    min-height: calc(100vh - 56px);
     display: flex;
     flex-direction: column;
 }
@@ -15,8 +15,9 @@ header {
 }
 
 h1 {
-    font-size: 24px;
+    font-size: 28px;
     margin: 0;
+    font-weight: bold;
 }
 
 .score-banner {
@@ -25,15 +26,19 @@ h1 {
     border-radius: 10px;
     text-align: center;
     margin-bottom: 20px;
-    font-size: 18px;
+}
+
+.score-banner h6 {
+    font-size: 20px;
     font-weight: bold;
+    margin: 0;
 }
 
 .scrollable-cards-container {
     position: relative;
     margin-bottom: 20px;
     width: 100%;
-    max-width: 600px;
+    max-width: 400px;
     margin-left: auto;
     margin-right: auto;
 }
@@ -50,43 +55,51 @@ h1 {
     flex: 0 0 100%;
     scroll-snap-align: start;
     background-color: #222;
-    padding: 20px;
+    padding: 25px 20px;
     border-radius: 10px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    min-height: 200px;
+    justify-content: space-between;
+    min-height: 160px;
     box-sizing: border-box;
     width: 100%;
 }
 
-.follow-card p {
+.follow-text {
     margin-top: 0;
-    margin-bottom: 15px;
+    margin-bottom: 1px;
     text-align: center;
-    font-size: 16px;
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 1.4;
 }
 
 .follow-card button,
-.follow-card .twitter-follow-button {
+.follow-card .twitter-follow-button,
+.join-button {
     background-color: #fff;
     color: #000;
     border: none;
-    padding: 10px 20px;
-    border-radius: 20px;
+    padding: 12px 24px;
+    border-radius: 24px;
     cursor: pointer;
     font-size: 16px;
     text-decoration: none;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .follow-card button:hover,
-.follow-card .twitter-follow-button:hover {
+.follow-card .twitter-follow-button:hover,
+.join-button:hover {
     background-color: #e6e6e6;
+    transform: translateY(-2px);
 }
 
 .follow-card iframe {
@@ -114,15 +127,16 @@ h1 {
     background-color: #fff;
 }
 
-h2 {
-    font-size: 20px;
+.rewards-title {
+    font-size: 24px;
     margin-bottom: 15px;
     text-align: center;
+    font-weight: bold;
 }
 
 .rewards-list {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 15px;
     margin-bottom: 20px;
 }
@@ -145,14 +159,15 @@ h2 {
 .reward-item .title {
     font-weight: bold;
     margin-bottom: 5px;
+    font-size: 14px;
 }
 
 .reward-item .amount {
     color: #0088cc;
     font-weight: bold;
+    font-size: 16px;
 }
 
-/* Bottom Navigation Styles */
 .bottom-nav {
     position: fixed;
     bottom: 0;
@@ -163,54 +178,72 @@ h2 {
 }
 
 .MuiBottomNavigationAction-root {
-    color: #888 !important; /* Grey color for inactive items */
+    color: #888 !important;
     transition: color 0.3s ease;
 }
 
 .MuiBottomNavigationAction-root.Mui-selected {
-    color: #fff !important; /* White color for active item */
+    color: #fff !important;
 }
 
 .MuiSvgIcon-root {
     fill: currentColor !important;
 }
 
-/* Responsive adjustments */
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+}
+
+.loading-container .MuiCircularProgress-root {
+    margin-bottom: 16px;
+}
+
+.no-data-message {
+    text-align: center;
+    margin-top: 20px;
+    color: #888;
+}
+
 @media (max-width: 600px) {
     .app {
         padding: 15px;
     }
 
     h1 {
-        font-size: 20px;
+        font-size: 24px;
     }
 
-    .score-banner {
-        font-size: 16px;
-        padding: 12px;
-    }
-
-    .follow-card {
-        padding: 15px;
-        min-height: 180px;
-    }
-
-    .follow-card p {
-        font-size: 14px;
-    }
-
-    .follow-card button,
-    .follow-card .twitter-follow-button {
-        font-size: 14px;
-        padding: 8px 16px;
-    }
-
-    h2 {
+    .score-banner h6 {
         font-size: 18px;
     }
 
+    .follow-card {
+        padding: 20px 15px;
+        min-height: 160px;
+    }
+
+    .follow-text {
+        font-size: 16px;
+        margin-bottom: 15px;
+    }
+
+    .follow-card button,
+    .follow-card .twitter-follow-button,
+    .join-button {
+        font-size: 14px;
+        padding: 10px 20px;
+    }
+
+    .rewards-title {
+        font-size: 20px;
+    }
+
     .rewards-list {
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
     }
 
     .reward-item {
@@ -220,25 +253,33 @@ h2 {
     .reward-item .icon {
         font-size: 20px;
     }
+
+    .reward-item .title {
+        font-size: 12px;
+    }
+
+    .reward-item .amount {
+        font-size: 14px;
+    }
 }
 
-/* For larger screens */
 @media (min-width: 1024px) {
     .scrollable-cards-container {
-        max-width: 800px;
+        max-width: 500px;
     }
 
     .follow-card {
-        min-height: 250px;
+        min-height: 200px;
     }
 
-    .follow-card p {
-        font-size: 18px;
+    .follow-text {
+        font-size: 20px;
     }
 
     .follow-card button,
-    .follow-card .twitter-follow-button {
+    .follow-card .twitter-follow-button,
+    .join-button {
         font-size: 18px;
-        padding: 12px 24px;
+        padding: 14px 28px;
     }
 }
