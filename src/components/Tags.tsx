@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import '../styles/Tags.css';
 import axiosInstance from '../utils/axiosConfig';
 import WebApp from '@twa-dev/sdk';
@@ -9,7 +9,7 @@ import {
     AlertTitle,
     Button
 } from '@mui/material';
-import {Refresh, Error as ErrorIcon} from '@mui/icons-material';
+import { Refresh, Error as ErrorIcon } from '@mui/icons-material';
 
 interface RewardItemProps {
     icon: string;
@@ -25,7 +25,7 @@ interface UserScore {
     invited_score: number;
 }
 
-const RewardItem: React.FC<RewardItemProps> = ({icon, title, amount}) => (
+const RewardItem: React.FC<RewardItemProps> = ({ icon, title, amount }) => (
     <div className="reward-item">
         <span className="icon">{icon}</span>
         <span className="title">{title}</span>
@@ -37,11 +37,36 @@ const Tags: React.FC = () => {
     const [userScore, setUserScore] = useState<UserScore | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
-
+    const [xFollowButtonLoaded, setXFollowButtonLoaded] = useState(false);
+    const [currentPage, setCurrentPage] = useState(0);
+    const totalPages = 2; // Assuming we have 2 cards
+    const autoScrollInterval = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
         fetchUserScore();
+        loadXFollowButton();
+
+        // Set up auto-scrolling
+        autoScrollInterval.current = setInterval(() => {
+            setCurrentPage((prevPage) => (prevPage + 1) % totalPages);
+        }, 5000); // Change page every 5 seconds
+
+        return () => {
+            if (autoScrollInterval.current) {
+                clearInterval(autoScrollInterval.current);
+            }
+        };
     }, []);
+
+    useEffect(() => {
+        const container = document.querySelector('.scrollable-cards');
+        if (container) {
+            container.scrollTo({
+                left: currentPage * container.clientWidth,
+                behavior: 'smooth'
+            });
+        }
+    }, [currentPage]);
 
     const fetchUserScore = async () => {
         try {
@@ -66,8 +91,31 @@ const Tags: React.FC = () => {
         }
     };
 
+    const loadXFollowButton = () => {
+        const script = document.createElement('script');
+        script.src = "https://platform.twitter.com/widgets.js";
+        script.charset = "utf-8";
+        script.async = true;
+        document.body.appendChild(script);
+
+        script.onload = () => {
+            setXFollowButtonLoaded(true);
+        };
+    };
+
     const handleFollowClick = () => {
         WebApp.openTelegramLink('https://t.me/tele_tags_dao');
+    };
+
+    const handleDotClick = (index: number) => {
+        setCurrentPage(index);
+        // Reset auto-scroll timer when manually changing page
+        if (autoScrollInterval.current) {
+            clearInterval(autoScrollInterval.current);
+        }
+        autoScrollInterval.current = setInterval(() => {
+            setCurrentPage((prevPage) => (prevPage + 1) % totalPages);
+        }, 5000);
     };
 
     return (
@@ -78,19 +126,19 @@ const Tags: React.FC = () => {
 
             {loading ? (
                 <div className="loading-container">
-                    <CircularProgress/>
+                    <CircularProgress />
                     <Typography variant="body1">Loading your score...</Typography>
                 </div>
             ) : error ? (
                 <Alert
                     severity="error"
-                    icon={<ErrorIcon fontSize="inherit"/>}
+                    icon={<ErrorIcon fontSize="inherit" />}
                     action={
                         <Button
                             color="inherit"
                             size="small"
                             onClick={fetchUserScore}
-                            startIcon={<Refresh/>}
+                            startIcon={<Refresh />}
                         >
                             RETRY
                         </Button>
@@ -109,17 +157,46 @@ const Tags: React.FC = () => {
                         <span>Your Score: {userScore.total_score} TAGS</span>
                     </div>
 
-                    <div className="follow-card">
-                        <p>Stay with us to get more rewards!</p>
-                        <button onClick={handleFollowClick}>Join</button>
+                    <div className="scrollable-cards-container">
+                        <div className="scrollable-cards">
+                            <div className="follow-card">
+                                <p>Follow us on X for the latest updates!</p>
+                                {xFollowButtonLoaded ? (
+                                    <a
+                                        href="https://x.com/tagfusion0707"
+                                        className="twitter-follow-button"
+                                        data-size="large"
+                                        data-show-count="false"
+                                    >
+                                        Follow
+                                    </a>
+                                ) : (
+                                    <CircularProgress size={24} />
+                                )}
+                            </div>
+
+                            <div className="follow-card">
+                                <p>Stay with us to get more rewards!</p>
+                                <button onClick={handleFollowClick}>Join</button>
+                            </div>
+                        </div>
+                        <div className="pagination-dots">
+                            {[...Array(totalPages)].map((_, index) => (
+                                <span
+                                    key={index}
+                                    className={`dot ${index === currentPage ? 'active' : ''}`}
+                                    onClick={() => handleDotClick(index)}
+                                ></span>
+                            ))}
+                        </div>
                     </div>
 
                     <h2>Your rewards</h2>
 
                     <div className="rewards-list">
-                        <RewardItem icon="✨" title="Account age" amount={`${userScore.account_age_score} TAGS`}/>
-                        <RewardItem icon="✅" title="Telegram Premium" amount={`${userScore.premium_score} TAGS`}/>
-                        <RewardItem icon="👥" title="Invited friends" amount={`${userScore.invited_score} TAGS`}/>
+                        <RewardItem icon="✨" title="Account age" amount={`${userScore.account_age_score} TAGS`} />
+                        <RewardItem icon="✅" title="Telegram Premium" amount={`${userScore.premium_score} TAGS`} />
+                        <RewardItem icon="👥" title="Invited friends" amount={`${userScore.invited_score} TAGS`} />
                     </div>
                 </>
             )}

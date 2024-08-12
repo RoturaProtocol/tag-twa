@@ -1,149 +1,244 @@
 .app {
-    max-width: 600px;
+    max-width: 100%;
     margin: 0 auto;
     padding: 20px;
     background-color: #000;
     color: #fff;
-    min-height: calc(100vh - 56px); /* Adjust for bottom navigation */
+    min-height: calc(100vh - 56px); /* Maintain space for bottom navigation */
     display: flex;
     flex-direction: column;
 }
 
 header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-.score-banner {
-    background-color: #0088cc;
-    padding: 10px;
-    border-radius: 10px;
     text-align: center;
     margin-bottom: 20px;
 }
 
+h1 {
+    font-size: 24px;
+    margin: 0;
+}
+
+.score-banner {
+    background-color: #0088cc;
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.scrollable-cards-container {
+    position: relative;
+    margin-bottom: 20px;
+    width: 100%;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.scrollable-cards {
+    display: flex;
+    overflow-x: hidden;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+}
+
 .follow-card {
+    flex: 0 0 100%;
+    scroll-snap-align: start;
     background-color: #222;
     padding: 20px;
     border-radius: 10px;
-    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    box-sizing: border-box;
+    width: 100%;
 }
 
-.follow-card button {
+.follow-card p {
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+    font-size: 16px;
+}
+
+.follow-card button,
+.follow-card .twitter-follow-button {
     background-color: #fff;
     color: #000;
     border: none;
     padding: 10px 20px;
     border-radius: 20px;
     cursor: pointer;
+    font-size: 16px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s ease;
+}
+
+.follow-card button:hover,
+.follow-card .twitter-follow-button:hover {
+    background-color: #e6e6e6;
+}
+
+.follow-card iframe {
+    background-color: white;
+    border-radius: 20px;
+}
+
+.pagination-dots {
+    display: flex;
+    justify-content: center;
+    margin-top: 15px;
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #555;
+    margin: 0 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.dot.active {
+    background-color: #fff;
+}
+
+h2 {
+    font-size: 20px;
+    margin-bottom: 15px;
+    text-align: center;
 }
 
 .rewards-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
     margin-bottom: 20px;
-    flex-grow: 1;
 }
 
 .reward-item {
-    display: flex;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.reward-item .icon {
-    margin-right: 15px;
-    font-size: 24px;
-}
-
-.reward-item .title {
-    flex-grow: 1;
-}
-
-.reward-item .amount {
-    font-weight: bold;
-}
-
-/* Styles for loading, error, and no-data states */
-.loading-container,
-.no-data-message {
-    flex-grow: 1;
+    background-color: #222;
+    padding: 15px;
+    border-radius: 10px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
     text-align: center;
 }
 
-.loading-container .MuiCircularProgress-root {
-    margin-bottom: 16px;
+.reward-item .icon {
+    font-size: 24px;
+    margin-bottom: 10px;
 }
 
-/* Updated error alert styles */
-.MuiAlert-root {
-    margin: 20px 0;
-    width: calc(100% - 40px);
-    max-width: 560px;
-    background-color: #ffe6e6 !important;
-    color: #610404 !important;
-    border-radius: 10px;
-    box-shadow: none;
-    padding: 16px;
+.reward-item .title {
+    font-weight: bold;
+    margin-bottom: 5px;
 }
 
-.MuiAlert-icon {
-    color: #610404 !important;
-}
-
-.MuiAlert-message {
-    padding: 8px 0;
-}
-
-.MuiAlert-action {
-    align-items: flex-end;
-    padding-top: 0;
-}
-
-.MuiButton-root {
-    text-transform: none;
-    color: #610404 !important;
+.reward-item .amount {
+    color: #0088cc;
     font-weight: bold;
 }
 
-.MuiAlert-standardError {
-    background-color: #ffe6e6 !important;
-    color: #610404 !important;
-}
-
-.MuiAlertTitle-root {
-    font-weight: bold;
-    margin-bottom: 8px;
-}
-
-/* Add these new styles for the bottom navigation */
-.MuiBottomNavigation-root {
-    background-color: #1e1e1e !important;
-    border-top: 1px solid #333;
+/* Bottom Navigation Styles */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: #222 !important;
+    z-index: 1000;
 }
 
 .MuiBottomNavigationAction-root {
-    color: #888 !important;
+    color: #888 !important; /* Grey color for inactive items */
+    transition: color 0.3s ease;
 }
 
 .MuiBottomNavigationAction-root.Mui-selected {
-    color: #fff !important;
+    color: #fff !important; /* White color for active item */
 }
 
 .MuiSvgIcon-root {
-    fill: currentColor;
+    fill: currentColor !important;
 }
 
-/* Ensure the app content doesn't overlap with the navigation bar */
-.app {
-    padding-bottom: 56px; /* Height of the bottom navigation bar */
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .app {
+        padding: 15px;
+    }
+
+    h1 {
+        font-size: 20px;
+    }
+
+    .score-banner {
+        font-size: 16px;
+        padding: 12px;
+    }
+
+    .follow-card {
+        padding: 15px;
+        min-height: 180px;
+    }
+
+    .follow-card p {
+        font-size: 14px;
+    }
+
+    .follow-card button,
+    .follow-card .twitter-follow-button {
+        font-size: 14px;
+        padding: 8px 16px;
+    }
+
+    h2 {
+        font-size: 18px;
+    }
+
+    .rewards-list {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+
+    .reward-item {
+        padding: 12px;
+    }
+
+    .reward-item .icon {
+        font-size: 20px;
+    }
 }
 
-/* Adjust the min-height to account for the navigation bar */
-.app {
-    min-height: calc(100vh - 56px);
+/* For larger screens */
+@media (min-width: 1024px) {
+    .scrollable-cards-container {
+        max-width: 800px;
+    }
+
+    .follow-card {
+        min-height: 250px;
+    }
+
+    .follow-card p {
+        font-size: 18px;
+    }
+
+    .follow-card button,
+    .follow-card .twitter-follow-button {
+        font-size: 18px;
+        padding: 12px 24px;
+    }
 }
