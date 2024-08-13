@@ -42,18 +42,20 @@ const Tags: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [xFollowButtonLoaded, setXFollowButtonLoaded] = useState(false);
     const [currentPage, setCurrentPage] = useState(0);
+    const [isPaused, setIsPaused] = useState(false);
     const [inviteLink, setInviteLink] = useState<string>('');
-    const totalPages = 3; // Updated to include the new invite link card
+    const totalPages = 3;
     const autoScrollInterval = useRef<NodeJS.Timeout | null>(null);
+    const scrollIntervalDuration = 8000; // 8 seconds
+    const scrollableRef = useRef<HTMLDivElement>(null);
+    const startX = useRef<number>(0);
+    const currentX = useRef<number>(0);
 
     useEffect(() => {
         fetchUserScore();
         loadXFollowButton();
         generateInviteLink();
-
-        autoScrollInterval.current = setInterval(() => {
-            setCurrentPage((prevPage) => (prevPage + 1) % totalPages);
-        }, 5000);
+        startAutoScroll();
 
         return () => {
             if (autoScrollInterval.current) {
@@ -62,11 +64,21 @@ const Tags: React.FC = () => {
         };
     }, []);
 
+    const startAutoScroll = () => {
+        if (autoScrollInterval.current) {
+            clearInterval(autoScrollInterval.current);
+        }
+        autoScrollInterval.current = setInterval(() => {
+            if (!isPaused) {
+                setCurrentPage((prevPage) => (prevPage + 1) % totalPages);
+            }
+        }, scrollIntervalDuration);
+    };
+
     useEffect(() => {
-        const container = document.querySelector('.scrollable-cards');
-        if (container) {
-            container.scrollTo({
-                left: currentPage * container.clientWidth,
+        if (scrollableRef.current) {
+            scrollableRef.current.scrollTo({
+                left: currentPage * scrollableRef.current.clientWidth,
                 behavior: 'smooth'
             });
         }
@@ -114,11 +126,22 @@ const Tags: React.FC = () => {
         }
     };
 
+    const handleInviteLinkFocus = () => {
+        setIsPaused(true);
+    };
+
+    const handleInviteLinkBlur = () => {
+        setIsPaused(false);
+        startAutoScroll();
+    };
+
     const copyInviteLink = () => {
         if (inviteLink) {
             navigator.clipboard.writeText(inviteLink)
                 .then(() => {
                     WebApp.showAlert('Invite link copied to clipboard!');
+                    setIsPaused(false);
+                    startAutoScroll();
                 })
                 .catch((err) => {
                     console.error('Failed to copy: ', err);
@@ -133,12 +156,55 @@ const Tags: React.FC = () => {
 
     const handleDotClick = (index: number) => {
         setCurrentPage(index);
-        if (autoScrollInterval.current) {
-            clearInterval(autoScrollInterval.current);
-        }
-        autoScrollInterval.current = setInterval(() => {
-            setCurrentPage((prevPage) => (prevPage + 1) % totalPages);
-        }, 5000);
+        setIsPaused(false);
+        startAutoScroll();
+    };
+
+    const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+        setIsPaused(true);
+        startX.current = e.touches[0].clientX;
+        currentX.current = startX.current;
+    };
+
+    const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+        if (!scrollableRef.current) return;
+        const touchX = e.touches[0].clientX;
+        const diff = currentX.current - touchX;
+        scrollableRef.current.scrollLeft += diff;
+        currentX.current = touchX;
+    };
+
+    const handleTouchEnd = () => {
+        if (!scrollableRef.current) return;
+        const newPage = Math.round(scrollableRef.current.scrollLeft / scrollableRef.current.clientWidth);
+        setCurrentPage(newPage);
+        setIsPaused(false);
+        startAutoScroll();
+    };
+
+    const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+        setIsPaused(true);
+        startX.current = e.clientX;
+        currentX.current = startX.current;
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+    };
+
+    const handleMouseMove = (e: MouseEvent) => {
+        if (!scrollableRef.current) return;
+        const diff = currentX.current - e.clientX;
+        scrollableRef.current.scrollLeft += diff;
+        currentX.current = e.clientX;
+    };
+
+    const handleMouseUp = () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+        if (!scrollableRef.current) return;
+        const newPage = Math.round(scrollableRef.current.scrollLeft / scrollableRef.current.clientWidth);
+        setCurrentPage(newPage);
+        setIsPaused(false);
+        startAutoScroll();
     };
 
     return (
@@ -181,7 +247,14 @@ const Tags: React.FC = () => {
                     </div>
 
                     <Box className="scrollable-cards-container">
-                        <div className="scrollable-cards">
+                        <div
+                            className="scrollable-cards"
+                            ref={scrollableRef}
+                            onTouchStart={handleTouchStart}
+                            onTouchMove={handleTouchMove}
+                            onTouchEnd={handleTouchEnd}
+                            onMouseDown={handleMouseDown}
+                        >
                             <Box className="follow-card invite-card">
                                 <Typography variant="body1" className="follow-text">
                                     Invite friends and get more Tags
@@ -195,6 +268,8 @@ const Tags: React.FC = () => {
                                             readOnly: true,
                                             className: "invite-link-input"
                                         }}
+                                        onFocus={handleInviteLinkFocus}
+                                        onBlur={handleInviteLinkBlur}
                                         size="small"
                                     />
                                     <IconButton
@@ -202,22 +277,9 @@ const Tags: React.FC = () => {
                                         className="copy-button"
                                         size="small"
                                     >
-                                        <ContentCopy />
+                                        <ContentCopy/>
                                     </IconButton>
                                 </Box>
-                            </Box>
-                            <Box className="follow-card">
-                                <Typography variant="body1" className="follow-text">
-                                    Stay with us to get more rewards!
-                                </Typography>
-                                <Button
-                                    variant="contained"
-                                    color="primary"
-                                    onClick={handleFollowClick}
-                                    className="join-button"
-                                >
-                                    JOIN
-                                </Button>
                             </Box>
                             <Box className="follow-card">
                                 <Typography variant="body1" className="follow-text">
@@ -236,6 +298,22 @@ const Tags: React.FC = () => {
                                     <CircularProgress size={24}/>
                                 )}
                             </Box>
+
+                            <Box className="follow-card">
+                                <Typography variant="body1" className="follow-text">
+                                    Stay with us to get more rewards!
+                                </Typography>
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={handleFollowClick}
+                                    className="join-button"
+                                >
+                                    JOIN
+                                </Button>
+                            </Box>
+
+
                         </div>
                         <div className="pagination-dots">
                             {[...Array(totalPages)].map((_, index) => (

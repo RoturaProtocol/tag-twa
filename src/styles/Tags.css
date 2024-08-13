@@ -426,3 +426,38 @@ h1 {
 .invite-link-container .copy-button {
     flex-shrink: 0;
 }
+
+.scrollable-cards-container {
+    position: relative;
+    margin-bottom: 24px;
+    width: 100%;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+    overflow: hidden;
+}
+
+.scrollable-cards {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* Internet Explorer 10+ */
+    width: 100%;
+    cursor: grab;
+}
+
+.scrollable-cards::-webkit-scrollbar {
+    display: none; /* WebKit */
+}
+
+.scrollable-cards:active {
+    cursor: grabbing;
+}
+
+.follow-card {
+    flex: 0 0 100%;
+    scroll-snap-align: start;
+    width: 100%;
+}
