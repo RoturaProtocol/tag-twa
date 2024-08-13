@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import '../styles/Tags.css';
 import axiosInstance from '../utils/axiosConfig';
 import WebApp from '@twa-dev/sdk';
@@ -8,9 +8,11 @@ import {
     Alert,
     AlertTitle,
     Button,
-    Box
+    Box,
+    TextField,
+    IconButton
 } from '@mui/material';
-import { Refresh, Error as ErrorIcon } from '@mui/icons-material';
+import {Refresh, Error as ErrorIcon, ContentCopy} from '@mui/icons-material';
 
 interface RewardItemProps {
     icon: string;
@@ -26,7 +28,7 @@ interface UserScore {
     invited_score: number;
 }
 
-const RewardItem: React.FC<RewardItemProps> = ({ icon, title, amount }) => (
+const RewardItem: React.FC<RewardItemProps> = ({icon, title, amount}) => (
     <div className="reward-item">
         <span className="icon">{icon}</span>
         <span className="title">{title}</span>
@@ -40,12 +42,14 @@ const Tags: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [xFollowButtonLoaded, setXFollowButtonLoaded] = useState(false);
     const [currentPage, setCurrentPage] = useState(0);
-    const totalPages = 2;
+    const [inviteLink, setInviteLink] = useState<string>('');
+    const totalPages = 3; // Updated to include the new invite link card
     const autoScrollInterval = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
         fetchUserScore();
         loadXFollowButton();
+        generateInviteLink();
 
         autoScrollInterval.current = setInterval(() => {
             setCurrentPage((prevPage) => (prevPage + 1) % totalPages);
@@ -103,6 +107,26 @@ const Tags: React.FC = () => {
         };
     };
 
+    const generateInviteLink = () => {
+        const user = WebApp.initDataUnsafe.user;
+        if (user && user.id) {
+            setInviteLink(`https://t.me/tag_fusion_bot?start=${user.id}`);
+        }
+    };
+
+    const copyInviteLink = () => {
+        if (inviteLink) {
+            navigator.clipboard.writeText(inviteLink)
+                .then(() => {
+                    WebApp.showAlert('Invite link copied to clipboard!');
+                })
+                .catch((err) => {
+                    console.error('Failed to copy: ', err);
+                    WebApp.showAlert('Failed to copy. Please copy the link manually.');
+                });
+        }
+    };
+
     const handleFollowClick = () => {
         WebApp.openTelegramLink('https://t.me/tele_tags_dao');
     };
@@ -125,19 +149,19 @@ const Tags: React.FC = () => {
 
             {loading ? (
                 <div className="loading-container">
-                    <CircularProgress />
+                    <CircularProgress/>
                     <Typography variant="body1">Loading your score...</Typography>
                 </div>
             ) : error ? (
                 <Alert
                     severity="error"
-                    icon={<ErrorIcon fontSize="inherit" />}
+                    icon={<ErrorIcon fontSize="inherit"/>}
                     action={
                         <Button
                             color="inherit"
                             size="small"
                             onClick={fetchUserScore}
-                            startIcon={<Refresh />}
+                            startIcon={<Refresh/>}
                         >
                             RETRY
                         </Button>
@@ -158,6 +182,43 @@ const Tags: React.FC = () => {
 
                     <Box className="scrollable-cards-container">
                         <div className="scrollable-cards">
+                            <Box className="follow-card invite-card">
+                                <Typography variant="body1" className="follow-text">
+                                    Invite friends and get more Tags
+                                </Typography>
+                                <Box className="invite-link-container">
+                                    <TextField
+                                        fullWidth
+                                        variant="outlined"
+                                        value={inviteLink}
+                                        InputProps={{
+                                            readOnly: true,
+                                            className: "invite-link-input"
+                                        }}
+                                        size="small"
+                                    />
+                                    <IconButton
+                                        onClick={copyInviteLink}
+                                        className="copy-button"
+                                        size="small"
+                                    >
+                                        <ContentCopy />
+                                    </IconButton>
+                                </Box>
+                            </Box>
+                            <Box className="follow-card">
+                                <Typography variant="body1" className="follow-text">
+                                    Stay with us to get more rewards!
+                                </Typography>
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={handleFollowClick}
+                                    className="join-button"
+                                >
+                                    JOIN
+                                </Button>
+                            </Box>
                             <Box className="follow-card">
                                 <Typography variant="body1" className="follow-text">
                                     Follow us on X for the latest updates!
@@ -172,22 +233,8 @@ const Tags: React.FC = () => {
                                         Follow
                                     </a>
                                 ) : (
-                                    <CircularProgress size={24} />
+                                    <CircularProgress size={24}/>
                                 )}
-                            </Box>
-
-                            <Box className="follow-card">
-                                <Typography variant="body1" className="follow-text">
-                                    Stay with us to get more rewards!
-                                </Typography>
-                                <Button
-                                    variant="contained"
-                                    color="primary"
-                                    onClick={handleFollowClick}
-                                    className="join-button"
-                                >
-                                    JOIN
-                                </Button>
                             </Box>
                         </div>
                         <div className="pagination-dots">
@@ -204,9 +251,12 @@ const Tags: React.FC = () => {
                     <Typography variant="h5" className="rewards-title">Your rewards</Typography>
 
                     <div className="rewards-list">
-                        <RewardItem icon="✨" title="Account age" amount={`${userScore.account_age_score.toLocaleString()} TAGS`} />
-                        <RewardItem icon="✅" title="Telegram Premium" amount={`${userScore.premium_score.toLocaleString()} TAGS`} />
-                        <RewardItem icon="👥" title="Invited friends" amount={`${userScore.invited_score.toLocaleString()} TAGS`} />
+                        <RewardItem icon="✨" title="Account age"
+                                    amount={`${userScore.account_age_score.toLocaleString()} TAGS`}/>
+                        <RewardItem icon="✅" title="Telegram Premium"
+                                    amount={`${userScore.premium_score.toLocaleString()} TAGS`}/>
+                        <RewardItem icon="👥" title="Invited friends"
+                                    amount={`${userScore.invited_score.toLocaleString()} TAGS`}/>
                     </div>
                 </>
             )}

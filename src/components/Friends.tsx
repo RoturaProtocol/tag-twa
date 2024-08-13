@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect} from 'react';
 import {
     Avatar,
     List,
@@ -11,12 +11,9 @@ import {
     Alert,
     AlertTitle,
     Chip,
-    TextField,
     Box,
-    Paper,
-    IconButton
 } from '@mui/material';
-import { People, Refresh, Error as ErrorIcon, ContentCopy } from '@mui/icons-material';
+import {Refresh, Error as ErrorIcon} from '@mui/icons-material';
 import axiosInstance from '../utils/axiosConfig';
 import WebApp from '@twa-dev/sdk';
 import '../styles/Friends.css';
@@ -31,11 +28,9 @@ const Friends: React.FC = () => {
     const [friendsData, setFriendsData] = useState<Friend[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
-    const [inviteLink, setInviteLink] = useState<string>('');
 
     useEffect(() => {
         fetchFriendsData();
-        generateInviteLink();
     }, []);
 
     const fetchFriendsData = async () => {
@@ -58,39 +53,23 @@ const Friends: React.FC = () => {
         }
     };
 
-    const generateInviteLink = () => {
-        const user = WebApp.initDataUnsafe.user;
-        if (user && user.id) {
-            // set link
-            setInviteLink(`https://t.me/tag_fusion_bot?start=${user.id}`);
-        }
-    };
-
-    const copyInviteLink = () => {
-        if (inviteLink) {
-            navigator.clipboard.writeText(inviteLink)
-                .then(() => {
-                    WebApp.showAlert('Invite link copied to clipboard!');
-                })
-                .catch((err) => {
-                    console.error('Failed to copy: ', err);
-                    WebApp.showAlert('Failed to copy. Please copy the link manually.');
-                });
-        }
-    };
 
     const generateAvatarProps = (tg_uid: string) => {
         const initials = tg_uid.substring(0, 2).toUpperCase();
         const color = `#${parseInt(tg_uid).toString(16).padStart(6, '0').slice(-6)}`;
-        return { initials, color };
+        return {initials, color};
     };
 
     const getLevelColor = (level: number) => {
         switch (level) {
-            case 1: return '#2196f3'; // blue
-            case 2: return '#9c27b0'; // purple
-            case 3: return '#4caf50'; // green
-            default: return '#757575'; // grey
+            case 1:
+                return '#2196f3'; // blue
+            case 2:
+                return '#9c27b0'; // purple
+            case 3:
+                return '#4caf50'; // green
+            default:
+                return '#757575'; // grey
         }
     };
 
@@ -100,62 +79,26 @@ const Friends: React.FC = () => {
                 Friends <span role="img" aria-label="friends">👥</span>
             </Typography>
 
-            <Paper elevation={3} className="invite-section">
-                <Box className="invite-banner">
-                    <People className="invite-icon" />
-                    <Typography variant="h6" className="invite-title">Invite</Typography>
-                </Box>
-
-                <Box p={2}>
-                    <Typography variant="body1" gutterBottom className="invite-text">
-                        Invite friends and get more Tags
-                    </Typography>
-                    <Box display="flex" alignItems="center" mb={1}>
-                        <TextField
-                            fullWidth
-                            variant="outlined"
-                            value={inviteLink}
-                            InputProps={{
-                                readOnly: true,
-                                className: "invite-link-input"
-                            }}
-                            size="small"
-                        />
-                        <IconButton
-                            onClick={copyInviteLink}
-                            color="primary"
-                            disabled={loading}
-                            sx={{ ml: 1 }}
-                            className="copy-button"
-                        >
-                            <ContentCopy />
-                        </IconButton>
-                    </Box>
-                    <Typography variant="caption" className="invite-caption">
-                        Share this link with your friends to invite them!
-                    </Typography>
-                </Box>
-            </Paper>
-
-            <Typography variant="h5" component="h2" gutterBottom sx={{ mt: 3 }} className="section-title">
+            <Typography variant="h5" component="h2" gutterBottom sx={{mt: 3}} className="section-title">
                 Your invited friends
             </Typography>
 
             {loading ? (
                 <Box display="flex" flexDirection="column" alignItems="center" my={4}>
-                    <CircularProgress />
-                    <Typography variant="body1" mt={2} className="loading-text">Loading your friends list...</Typography>
+                    <CircularProgress/>
+                    <Typography variant="body1" mt={2} className="loading-text">Loading your friends
+                        list...</Typography>
                 </Box>
             ) : error ? (
                 <Alert
                     severity="error"
-                    icon={<ErrorIcon fontSize="inherit" />}
+                    icon={<ErrorIcon fontSize="inherit"/>}
                     action={
                         <Button
                             color="inherit"
                             size="small"
                             onClick={fetchFriendsData}
-                            startIcon={<Refresh />}
+                            startIcon={<Refresh/>}
                         >
                             RETRY
                         </Button>
@@ -167,11 +110,11 @@ const Friends: React.FC = () => {
             ) : friendsData.length > 0 ? (
                 <List className="friends-list">
                     {friendsData.map((friend) => {
-                        const { initials, color } = generateAvatarProps(friend.tg_uid);
+                        const {initials, color} = generateAvatarProps(friend.tg_uid);
                         return (
                             <ListItem key={friend.tg_uid} className="friend-item">
                                 <ListItemAvatar>
-                                    <Avatar style={{ backgroundColor: color }}>{initials}</Avatar>
+                                    <Avatar style={{backgroundColor: color}}>{initials}</Avatar>
                                 </ListItemAvatar>
                                 <ListItemText
                                     primary={<span className="friend-name">User {friend.tg_uid}</span>}
