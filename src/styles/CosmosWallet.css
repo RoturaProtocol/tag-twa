@@ -1,0 +1,266 @@
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono&display=swap');
+
+/* Base styles */
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    margin: 0;
+    padding: 0;
+}
+
+/* Wallet Creation Styles */
+.wallet-creation-container {
+    background-color: #1a1a1a;
+    color: #ffffff;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    box-sizing: border-box;
+}
+
+.wallet-creation-content {
+    width: 100%;
+    max-width: 300px;
+    text-align: center;
+}
+
+.wallet-creation-container h5 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+}
+
+.wallet-subtitle {
+    font-size: 1rem;
+    color: #a0a0a0;
+    margin-bottom: 24px;
+}
+
+.wallet-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+}
+
+.wallet-button {
+    height: 48px;
+    font-size: 1rem;
+    font-weight: 500;
+    text-transform: none;
+    letter-spacing: 0.5px;
+}
+
+/* Main Wallet Container */
+.wallet-container {
+    background-color: #1a1a1a;
+    color: #ffffff;
+    min-height: 100vh;
+    padding: 24px;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+/* Typography */
+h5, h6 {
+    font-weight: 600;
+    letter-spacing: -0.5px;
+}
+
+h5 {
+    font-size: 1.5rem;
+    margin-bottom: 16px;
+}
+
+h6 {
+    font-size: 1.25rem;
+    margin-bottom: 12px;
+}
+
+/* Wallet Address */
+.wallet-address-container {
+    background-color: #2a2a2a !important;
+    padding: 24px;
+    margin-bottom: 24px;
+    border-radius: 12px;
+}
+
+.wallet-address-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 12px;
+}
+
+.wallet-address {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 0.9rem;
+    word-break: break-all;
+    color: #fdfdfd;
+    letter-spacing: 0.5px;
+}
+
+.address-visibility-button,
+.address-copy-button {
+    color: #00d0ff !important;
+}
+
+.address-visibility-button {
+    margin-right: 8px;
+}
+
+/* Token Balances */
+.token-balances-title {
+    margin-bottom: 16px;
+}
+
+.token-balance-item {
+    background-color: #2a2a2a;
+    margin-bottom: 12px;
+    border-radius: 8px;
+    padding: 16px;
+}
+
+.token-balance-item .MuiListItemText-primary {
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.token-balance-item .MuiListItemText-secondary {
+    font-size: 0.9rem;
+    color: #a0a0a0;
+}
+
+.token-balance-amount {
+    text-align: right;
+}
+
+.token-balance-amount .MuiTypography-body1 {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.token-balance-amount .MuiTypography-body2 {
+    font-size: 0.9rem;
+    color: #a0a0a0;
+}
+
+.positive-change {
+    color: #4caf50;
+    margin-left: 8px;
+    font-weight: 500;
+}
+
+.negative-change {
+    color: #f44336;
+    margin-left: 8px;
+    font-weight: 500;
+}
+
+/* Transfer Button */
+.transfer-button-container {
+    margin-top: 24px;
+}
+
+.transfer-button {
+    height: 48px;
+    font-size: 1rem;
+    font-weight: 500;
+    text-transform: none;
+    letter-spacing: 0.5px;
+}
+
+/* Mnemonic Dialog */
+.mnemonic-dialog {
+    background-color: #2a2a2a !important;
+    color: #ffffff !important;
+    box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.1);
+}
+
+.mnemonic-dialog .MuiDialogTitle-root {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.mnemonic-instructions {
+    color: #cccccc;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.mnemonic-box {
+    display: flex;
+    align-items: center;
+    background-color: #1a1a1a;
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px solid #444444;
+}
+
+.mnemonic-text {
+    flex-grow: 1;
+    overflow-x: auto;
+    color: #00ff00;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 0.9rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+    letter-spacing: 0.5px;
+}
+
+.mnemonic-copy-button {
+    color: #00ff00 !important;
+}
+
+.mnemonic-confirm-button {
+    color: #00ff00 !important;
+    font-weight: 500;
+}
+
+/* Snackbar */
+.copy-snackbar {
+    background-color: #333333 !important;
+    color: #ffffff !important;
+    font-size: 0.9rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .wallet-creation-container,
+    .wallet-container {
+        padding: 16px;
+    }
+
+    .wallet-address-container {
+        padding: 20px;
+    }
+
+    .wallet-address {
+        font-size: 0.85rem;
+    }
+
+    .token-balance-item {
+        padding: 14px;
+    }
+
+    .token-balance-item .MuiListItemText-primary {
+        font-size: 1rem;
+    }
+
+    .token-balance-item .MuiListItemText-secondary {
+        font-size: 0.85rem;
+    }
+
+    .token-balance-amount .MuiTypography-body1 {
+        font-size: 1rem;
+    }
+
+    .token-balance-amount .MuiTypography-body2 {
+        font-size: 0.85rem;
+    }
+}
