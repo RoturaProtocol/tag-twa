@@ -327,6 +327,7 @@ const Tags: React.FC = () => {
                     </Box>
 
                     <Typography variant="h5" className="rewards-title">Your rewards</Typography>
+                    <br/>
 
                     <div className="rewards-list">
                         <RewardItem icon="✨" title="Account age"
