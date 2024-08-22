@@ -19,7 +19,7 @@ import {
     Snackbar,
     Paper,
 } from '@mui/material';
-import {Language, ContentCopy, Visibility, VisibilityOff} from '@mui/icons-material';
+import {Language, ContentCopy, Visibility, VisibilityOff, VpnKey} from '@mui/icons-material';
 import WebApp from '@twa-dev/sdk';
 import {useNavigate} from 'react-router-dom';
 import '../styles/CosmosWallet.css';
@@ -48,6 +48,7 @@ const CosmosWallet: React.FC = () => {
     const [mnemonic, setMnemonic] = useState<string>('');
     const [showCopySnackbar, setShowCopySnackbar] = useState<boolean>(false);
     const [showFullAddress, setShowFullAddress] = useState<boolean>(false);
+    const [showExportMnemonicDialog, setShowExportMnemonicDialog] = useState<boolean>(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -74,6 +75,7 @@ const CosmosWallet: React.FC = () => {
 
             if (storedMnemonic) {
                 await importWallet(storedMnemonic);
+                setMnemonic(storedMnemonic);
             }
         } catch (error) {
             console.error('Error loading existing wallet:', error);
@@ -198,11 +200,6 @@ const CosmosWallet: React.FC = () => {
         });
     };
 
-    // const handleTransfer = () => {
-    //     // Implement transfer functionality here
-    //     WebApp.showAlert('Transfer functionality coming soon!');
-    // };
-
     const maskAddress = (addr: string) => {
         if (addr.length > 12) {
             return `${addr.slice(0, 6)}...${addr.slice(-6)}`;
@@ -212,6 +209,14 @@ const CosmosWallet: React.FC = () => {
 
     const toggleAddressVisibility = () => {
         setShowFullAddress(!showFullAddress);
+    };
+
+    const handleExportMnemonic = () => {
+        setShowExportMnemonicDialog(true);
+    };
+
+    const handleExportMnemonicDialogClose = () => {
+        setShowExportMnemonicDialog(false);
     };
 
     if (loading) {
@@ -276,6 +281,18 @@ const CosmosWallet: React.FC = () => {
                         </IconButton>
                     </Box>
                 </Box>
+                <Box mt={3}>
+                    <Button
+                        variant="contained"
+                        color="secondary"
+                        fullWidth
+                        onClick={handleExportMnemonic}
+                        startIcon={<VpnKey/>}
+                        className="export-mnemonic-button"
+                    >
+                        Export Mnemonic
+                    </Button>
+                </Box>
             </Paper>
 
             <Typography variant="h6" gutterBottom className="token-balances-title">Token Balances</Typography>
@@ -311,6 +328,7 @@ const CosmosWallet: React.FC = () => {
                 ))}
             </List>
 
+
             <Dialog
                 open={showMnemonicDialog}
                 onClose={handleMnemonicDialogClose}
@@ -336,6 +354,34 @@ const CosmosWallet: React.FC = () => {
                 <DialogActions>
                     <Button onClick={handleMnemonicDialogClose} className="mnemonic-confirm-button">
                         I've Saved It
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            <Dialog
+                open={showExportMnemonicDialog}
+                onClose={handleExportMnemonicDialogClose}
+                PaperProps={{
+                    className: "mnemonic-dialog"
+                }}
+            >
+                <DialogTitle>Your Mnemonic Phrase</DialogTitle>
+                <DialogContent>
+                    <Typography variant="body1" paragraph className="mnemonic-instructions">
+                        This is your mnemonic phrase. Keep it safe and never share it with anyone.
+                    </Typography>
+                    <Box className="mnemonic-box">
+                        <Typography variant="body2" component="pre" className="mnemonic-text">
+                            {mnemonic}
+                        </Typography>
+                        <IconButton onClick={handleCopyMnemonic} size="small" className="mnemonic-copy-button">
+                            <ContentCopy/>
+                        </IconButton>
+                    </Box>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleExportMnemonicDialogClose} className="mnemonic-confirm-button">
+                        Close
                     </Button>
                 </DialogActions>
             </Dialog>

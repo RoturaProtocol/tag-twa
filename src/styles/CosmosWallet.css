@@ -94,7 +94,7 @@ h6 {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-top: 12px;
+    margin-bottom: 16px;
 }
 
 .wallet-address {
@@ -112,6 +112,22 @@ h6 {
 
 .address-visibility-button {
     margin-right: 8px;
+}
+
+/* Export Mnemonic Button */
+.export-mnemonic-button {
+    height: 40px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-transform: none !important;
+    letter-spacing: 0.5px;
+    background-color: transparent !important;
+    color: #00d0ff !important;
+    border-color: #00d0ff !important;
+}
+
+.export-mnemonic-button:hover {
+    background-color: rgba(0, 208, 255, 0.1) !important;
 }
 
 /* Token Balances */
@@ -162,19 +178,6 @@ h6 {
     font-weight: 500;
 }
 
-/* Transfer Button */
-.transfer-button-container {
-    margin-top: 24px;
-}
-
-.transfer-button {
-    height: 48px;
-    font-size: 1rem;
-    font-weight: 500;
-    text-transform: none;
-    letter-spacing: 0.5px;
-}
-
 /* Mnemonic Dialog */
 .mnemonic-dialog {
     background-color: #2a2a2a !important;
@@ -185,12 +188,16 @@ h6 {
 .mnemonic-dialog .MuiDialogTitle-root {
     font-size: 1.25rem;
     font-weight: 600;
+    background-color: #4a148c;
+    color: #ffffff;
+    padding: 16px 24px;
 }
 
 .mnemonic-instructions {
     color: #cccccc;
     font-size: 0.95rem;
     line-height: 1.6;
+    margin-bottom: 16px;
 }
 
 .mnemonic-box {
@@ -244,6 +251,11 @@ h6 {
         font-size: 0.85rem;
     }
 
+    .export-mnemonic-button {
+        font-size: 0.8rem;
+        height: 36px;
+    }
+
     .token-balance-item {
         padding: 14px;
     }
@@ -262,5 +274,17 @@ h6 {
 
     .token-balance-amount .MuiTypography-body2 {
         font-size: 0.85rem;
+    }
+
+    .mnemonic-dialog .MuiDialogTitle-root {
+        font-size: 1.1rem;
+    }
+
+    .mnemonic-instructions {
+        font-size: 0.9rem;
+    }
+
+    .mnemonic-text {
+        font-size: 0.8rem;
     }
 }
