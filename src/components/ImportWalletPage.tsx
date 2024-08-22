@@ -10,7 +10,6 @@ import {
 } from '@mui/material';
 import WebApp from '@twa-dev/sdk';
 
-
 const ImportWalletPage: React.FC = () => {
     const [mnemonic, setMnemonic] = useState('');
     const [loading, setLoading] = useState(false);
@@ -21,7 +20,15 @@ const ImportWalletPage: React.FC = () => {
         setLoading(true);
         setError(null);
         try {
-            WebApp.CloudStorage.setItem('tura_mnemonic', mnemonic);
+            await new Promise<void>((resolve, reject) => {
+                WebApp.CloudStorage.setItem('tura_mnemonic', mnemonic, (error) => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve();
+                    }
+                });
+            });
             navigate('/wallet');
         } catch (error) {
             console.error('Error importing wallet:', error);

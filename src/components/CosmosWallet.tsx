@@ -20,7 +20,7 @@ import {
     Paper,
     Tooltip,
 } from '@mui/material';
-import {Language, ContentCopy, Send, Visibility, VisibilityOff} from '@mui/icons-material';
+import {Language, ContentCopy, Visibility, VisibilityOff} from '@mui/icons-material';
 import WebApp from '@twa-dev/sdk';
 import {useNavigate} from 'react-router-dom';
 import '../styles/CosmosWallet.css';
@@ -62,9 +62,23 @@ const CosmosWallet: React.FC = () => {
     }, [address]);
 
     const loadExistingWallet = async () => {
-        const storedMnemonic = WebApp.CloudStorage.getItem('tura_mnemonic');
-        if (storedMnemonic) {
-            await importWallet(storedMnemonic);
+        try {
+            const storedMnemonic = await new Promise<string | null>((resolve, reject) => {
+                WebApp.CloudStorage.getItem('tura_mnemonic', (error, result) => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve(result as string | null);
+                    }
+                });
+            });
+
+            if (storedMnemonic) {
+                await importWallet(storedMnemonic);
+            }
+        } catch (error) {
+            console.error('Error loading existing wallet:', error);
+            WebApp.showAlert('Failed to load existing wallet. Please try again.');
         }
     };
 
@@ -83,7 +97,16 @@ const CosmosWallet: React.FC = () => {
             setAddress(account.address);
             setMnemonic(newWallet.mnemonic);
             setShowMnemonicDialog(true);
-            WebApp.CloudStorage.setItem('tura_mnemonic', newWallet.mnemonic);
+
+            await new Promise<void>((resolve, reject) => {
+                WebApp.CloudStorage.setItem('tura_mnemonic', newWallet.mnemonic, (error) => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve();
+                    }
+                });
+            });
         } catch (error) {
             console.error('Error generating wallet:', error);
             WebApp.showAlert('Failed to generate wallet. Please try again.');
@@ -105,7 +128,16 @@ const CosmosWallet: React.FC = () => {
             const [account] = await importedWallet.getAccounts();
             setWallet(importedWallet);
             setAddress(account.address);
-            WebApp.CloudStorage.setItem('tura_mnemonic', mnemonic);
+
+            await new Promise<void>((resolve, reject) => {
+                WebApp.CloudStorage.setItem('tura_mnemonic', mnemonic, (error) => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve();
+                    }
+                });
+            });
         } catch (error) {
             console.error('Error importing wallet:', error);
             WebApp.showAlert('Failed to import wallet. Please check your mnemonic and try again.');
@@ -167,10 +199,10 @@ const CosmosWallet: React.FC = () => {
         });
     };
 
-    const handleTransfer = () => {
-        // Implement transfer functionality here
-        WebApp.showAlert('Transfer functionality coming soon!');
-    };
+    // const handleTransfer = () => {
+    //     // Implement transfer functionality here
+    //     WebApp.showAlert('Transfer functionality coming soon!');
+    // };
 
     const maskAddress = (addr: string) => {
         if (addr.length > 12) {
