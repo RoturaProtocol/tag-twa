@@ -18,7 +18,6 @@ import {
     IconButton,
     Snackbar,
     Paper,
-    Tooltip,
 } from '@mui/material';
 import {Language, ContentCopy, Visibility, VisibilityOff} from '@mui/icons-material';
 import WebApp from '@twa-dev/sdk';
@@ -159,7 +158,7 @@ const CosmosWallet: React.FC = () => {
                     symbol: 'TURA',
                     name: 'Tura',
                     balance: turaBalance ? (parseFloat(turaBalance.amount) / 100000000).toFixed(6) : '0',
-                    icon: <img src={TURA_COIN_IMAGE} alt="TURA" style={{ width: 40, height: 40 }} />,
+                    icon: <img src={TURA_COIN_IMAGE} alt="TURA" style={{width: 40, height: 40}}/>,
                     image: TURA_COIN_IMAGE,
                 },
                 {
@@ -268,17 +267,13 @@ const CosmosWallet: React.FC = () => {
                         {showFullAddress ? address : maskAddress(address)}
                     </Typography>
                     <Box>
-                        <Tooltip title={showFullAddress ? "Hide full address" : "Show full address"}>
-                            <IconButton onClick={toggleAddressVisibility} size="small"
-                                        className="address-visibility-button">
-                                {showFullAddress ? <VisibilityOff/> : <Visibility/>}
-                            </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Copy address">
-                            <IconButton onClick={handleCopyAddress} size="small" className="address-copy-button">
-                                <ContentCopy/>
-                            </IconButton>
-                        </Tooltip>
+                        <IconButton onClick={toggleAddressVisibility} size="small"
+                                    className="address-visibility-button">
+                            {showFullAddress ? <VisibilityOff/> : <Visibility/>}
+                        </IconButton>
+                        <IconButton onClick={handleCopyAddress} size="small" className="address-copy-button">
+                            <ContentCopy/>
+                        </IconButton>
                     </Box>
                 </Box>
             </Paper>
@@ -289,7 +284,7 @@ const CosmosWallet: React.FC = () => {
                     <ListItem key={index} className="token-balance-item">
                         <ListItemIcon>
                             {token.image ? (
-                                <img src={token.image} alt={token.symbol} style={{ width: 50, height: 50 }} />
+                                <img src={token.image} alt={token.symbol} style={{width: 50, height: 50}}/>
                             ) : (
                                 token.icon
                             )}
