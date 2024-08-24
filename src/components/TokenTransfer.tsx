@@ -118,7 +118,7 @@ const TokenTransfer: React.FC<TokenTransferProps> = ({
             const gasFeeAmount = calculateFee(GAS_FEES[gasFeeLevel]);
 
             const fee: StdFee = {
-                amount: coins(gasFeeAmount, denom),
+                amount: coins(gasFeeAmount, 'utura'),
                 gas: DEFAULT_GAS_LIMIT.toString(),
             };
 
