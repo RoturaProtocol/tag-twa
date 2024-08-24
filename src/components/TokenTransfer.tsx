@@ -11,14 +11,47 @@ import {
     CircularProgress,
     FormControlLabel,
     Switch,
-    InputAdornment
+    ToggleButton,
+    ToggleButtonGroup,
+    styled
 } from '@mui/material';
 import {SigningStargateClient, StdFee} from '@cosmjs/stargate';
 import {DirectSecp256k1HdWallet} from '@cosmjs/proto-signing';
 import {stringToPath} from '@cosmjs/crypto';
 import {coins} from '@cosmjs/proto-signing';
-import {MsgSend} from 'cosmjs-types/cosmos/bank/v1beta1/tx';
 import WebApp from '@twa-dev/sdk';
+
+// Styled components for dark theme
+const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({theme}) => ({
+    '& .MuiToggleButtonGroup-grouped': {
+        margin: theme.spacing(0.5),
+        border: 0,
+        '&.Mui-disabled': {
+            border: 0,
+        },
+        '&:not(:first-of-type)': {
+            borderRadius: theme.shape.borderRadius,
+        },
+        '&:first-of-type': {
+            borderRadius: theme.shape.borderRadius,
+        },
+    },
+}));
+
+const StyledToggleButton = styled(ToggleButton)(() => ({
+    color: '#ffffff',
+    backgroundColor: '#424242',
+    '&.Mui-selected': {
+        color: '#ffffff',
+        backgroundColor: '#1976d2',
+    },
+    '&:hover': {
+        backgroundColor: '#616161',
+    },
+    '&.Mui-selected:hover': {
+        backgroundColor: '#1565c0',
+    },
+}));
 
 interface TokenTransferProps {
     open: boolean;
@@ -32,17 +65,23 @@ interface TokenTransferProps {
 const TURA_RPC_ENDPOINT = "https://rpc-beta1.turablockchain.com";
 const TURA_PREFIX = "tura";
 const TURA_COIN_TYPE = "118";
-const DEFAULT_GAS_PRICE = 0.025; // in TURA
-const DEFAULT_GAS_LIMIT = 200000;
+const DEFAULT_GAS_LIMIT = 100000; // Adjusted for Tura network
+const GAS_ADJUSTMENT = 1.3;
+
+const GAS_PRICES = {
+    low: 0.000007,
+    medium: 0.000018,
+    high: 0.000029
+};
 
 const TokenTransfer: React.FC<TokenTransferProps> = ({open, onClose, tokenSymbol, address, balance, mnemonic}) => {
     const [recipient, setRecipient] = useState('');
     const [amount, setAmount] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [autoGas, setAutoGas] = useState(true);
-    const [manualGasLimit, setManualGasLimit] = useState(DEFAULT_GAS_LIMIT.toString());
-    const [manualGasPrice, setManualGasPrice] = useState(DEFAULT_GAS_PRICE.toString());
+    const [gasPrice, setGasPrice] = useState<'low' | 'medium' | 'high'>('medium');
+    const [autoGasAdjustment, setAutoGasAdjustment] = useState(true);
+    const [manualGasAdjustment, setManualGasAdjustment] = useState(GAS_ADJUSTMENT.toString());
 
     const handleTransfer = async () => {
         setLoading(true);
@@ -59,47 +98,16 @@ const TokenTransfer: React.FC<TokenTransferProps> = ({open, onClose, tokenSymbol
             const denom = tokenSymbol === 'TURA' ? 'utura' : 'utags';
             const transferAmount = coins(Math.floor(parseFloat(amount) * 1000000), denom);
 
-            let gasLimit: number;
-            let gasPrice: string;
-
-            if (autoGas) {
-                gasLimit = DEFAULT_GAS_LIMIT;
-                gasPrice = `${DEFAULT_GAS_PRICE}${denom}`;
-            } else {
-                gasLimit = parseInt(manualGasLimit);
-                gasPrice = `${manualGasPrice}${denom}`;
-            }
+            const gasLimit = DEFAULT_GAS_LIMIT;
+            const selectedGasPrice = GAS_PRICES[gasPrice];
+            const adjustmentFactor = autoGasAdjustment ? GAS_ADJUSTMENT : parseFloat(manualGasAdjustment);
 
             const fee: StdFee = {
-                amount: coins(Math.round(gasLimit * parseFloat(gasPrice) * 1000000), denom),
+                amount: coins(Math.round(gasLimit * selectedGasPrice * adjustmentFactor * 1000000), denom),
                 gas: gasLimit.toString(),
             };
 
-            // Check if the account exists
-            const accountOnChain = await client.getAccount(address);
-
-            let result;
-            if (accountOnChain) {
-                // If the account exists, use the standard sendTokens method
-                result = await client.sendTokens(address, recipient, transferAmount, fee, "");
-            } else {
-                // If the account doesn't exist, we need to create and send the transaction manually
-                const msg = {
-                    typeUrl: "/cosmos.bank.v1beta1.MsgSend",
-                    value: MsgSend.fromPartial({
-                        fromAddress: address,
-                        toAddress: recipient,
-                        amount: transferAmount,
-                    }),
-                };
-
-                result = await client.signAndBroadcast(
-                    address,
-                    [msg],
-                    fee,
-                    ""
-                );
-            }
+            const result = await client.sendTokens(address, recipient, transferAmount, fee, "");
 
             if (result.code !== undefined && result.code !== 0) {
                 throw new Error(result.rawLog);
@@ -116,7 +124,17 @@ const TokenTransfer: React.FC<TokenTransferProps> = ({open, onClose, tokenSymbol
     };
 
     return (
-        <Dialog open={open} onClose={onClose} PaperProps={{style: {backgroundColor: '#2a2a2a', color: '#ffffff'}}}>
+        <Dialog
+            open={open}
+            onClose={onClose}
+            PaperProps={{
+                style: {
+                    backgroundColor: '#2a2a2a',
+                    color: '#ffffff',
+                    minWidth: '300px',  // Ensure dialog is wide enough on mobile
+                }
+            }}
+        >
             <DialogTitle>{`Transfer ${tokenSymbol}`}</DialogTitle>
             <DialogContent>
                 <Box mb={2}>
@@ -143,43 +161,52 @@ const TokenTransfer: React.FC<TokenTransferProps> = ({open, onClose, tokenSymbol
                     InputProps={{style: {color: '#ffffff'}}}
                     InputLabelProps={{style: {color: '#aaaaaa'}}}
                 />
-                <FormControlLabel
-                    control={
-                        <Switch
-                            checked={autoGas}
-                            onChange={(e) => setAutoGas(e.target.checked)}
-                            color="primary"
-                        />
-                    }
-                    label="Automatic Gas"
-                />
-                {!autoGas && (
-                    <>
-                        <TextField
-                            margin="dense"
-                            label="Gas Limit"
-                            type="number"
-                            fullWidth
-                            value={manualGasLimit}
-                            onChange={(e) => setManualGasLimit(e.target.value)}
-                            InputProps={{style: {color: '#ffffff'}}}
-                            InputLabelProps={{style: {color: '#aaaaaa'}}}
-                        />
-                        <TextField
-                            margin="dense"
-                            label="Gas Price"
-                            type="number"
-                            fullWidth
-                            value={manualGasPrice}
-                            onChange={(e) => setManualGasPrice(e.target.value)}
-                            InputProps={{
-                                style: {color: '#ffffff'},
-                                endAdornment: <InputAdornment
-                                    position="end">{tokenSymbol.toLowerCase()}</InputAdornment>
-                            }}
-                            InputLabelProps={{style: {color: '#aaaaaa'}}}
-                        />
-                    </>
+                <Box mt={2}>
+                    <Typography variant="body2" gutterBottom>Gas Price</Typography>
+                    <StyledToggleButtonGroup
+                        value={gasPrice}
+                        exclusive
+                        onChange={(_, newValue) => newValue && setGasPrice(newValue)}
+                        aria-label="gas price"
+                        fullWidth
+                    >
+                        <StyledToggleButton value="low" aria-label="low">
+                            Low ({GAS_PRICES.low} TURA)
+                        </StyledToggleButton>
+                        <StyledToggleButton value="medium" aria-label="medium">
+                            Medium ({GAS_PRICES.medium} TURA)
+                        </StyledToggleButton>
+                        <StyledToggleButton value="high" aria-label="high">
+                            High ({GAS_PRICES.high} TURA)
+                        </StyledToggleButton>
+                    </StyledToggleButtonGroup>
+                </Box>
+                <Box mt={2}>
+                    <FormControlLabel
+                        control={
+                            <Switch
+                                checked={autoGasAdjustment}
+                                onChange={(e) => setAutoGasAdjustment(e.target.checked)}
+                                color="primary"
+                            />
+                        }
+                        label="Automatic Gas Adjustment"
+                    />
+                </Box>
+                {!autoGasAdjustment && (
+                    <TextField
+                        margin="dense"
+                        label="Gas Adjustment Factor"
+                        type="number"
+                        fullWidth
+                        value={manualGasAdjustment}
+                        onChange={(e) => setManualGasAdjustment(e.target.value)}
+                        InputProps={{
+                            style: {color: '#ffffff'},
+                            inputProps: {min: 1, step: 0.1}
+                        }}
+                        InputLabelProps={{style: {color: '#aaaaaa'}}}
+                    />
                 )}
                 {error && (
                     <Typography color="error" variant="body2" style={{marginTop: '8px'}}>
@@ -188,10 +215,10 @@ const TokenTransfer: React.FC<TokenTransferProps> = ({open, onClose, tokenSymbol
                 )}
             </DialogContent>
             <DialogActions>
-                <Button onClick={onClose} color="primary">
+                <Button onClick={onClose} style={{color: '#ffffff'}}>
                     Cancel
                 </Button>
-                <Button onClick={handleTransfer} color="primary" disabled={loading || !recipient || !amount}>
+                <Button onClick={handleTransfer} style={{color: '#ffffff'}} disabled={loading || !recipient || !amount}>
                     {loading ? <CircularProgress size={24}/> : 'Transfer'}
                 </Button>
             </DialogActions>

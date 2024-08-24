@@ -19,12 +19,11 @@ import {
     Snackbar,
     Paper,
 } from '@mui/material';
-import {Language, ContentCopy, Visibility, VisibilityOff, VpnKey} from '@mui/icons-material';
+import {Language, ContentCopy, Visibility, VisibilityOff, VpnKey, WarningAmber} from '@mui/icons-material';
 import WebApp from '@twa-dev/sdk';
 import {useNavigate} from 'react-router-dom';
 import '../styles/CosmosWallet.css';
 import TokenTransfer from './TokenTransfer';
-
 
 const TURA_PREFIX = "tura";
 const TURA_COIN_TYPE = "118";
@@ -54,7 +53,7 @@ const CosmosWallet: React.FC = () => {
     const navigate = useNavigate();
     const [showTransferDialog, setShowTransferDialog] = useState(false);
     const [selectedToken, setSelectedToken] = useState<TokenBalance | null>(null);
-
+    const [showResetDialog, setShowResetDialog] = useState<boolean>(false);
 
     useEffect(() => {
         loadExistingWallet();
@@ -65,7 +64,6 @@ const CosmosWallet: React.FC = () => {
             fetchBalances();
         }
     }, [address]);
-
 
     const loadExistingWallet = async () => {
         try {
@@ -235,6 +233,33 @@ const CosmosWallet: React.FC = () => {
         setSelectedToken(null);
     };
 
+    const handleResetWallet = () => {
+        setShowResetDialog(true);
+    };
+
+    const confirmResetWallet = async () => {
+        try {
+            await new Promise<void>((resolve, reject) => {
+                WebApp.CloudStorage.removeItem('tura_mnemonic', (error) => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve();
+                    }
+                });
+            });
+            setWallet(null);
+            setAddress('');
+            setMnemonic('');
+            setBalances([]);
+            setShowResetDialog(false);
+            WebApp.showAlert('Wallet has been reset successfully.');
+        } catch (error) {
+            console.error('Error resetting wallet:', error);
+            WebApp.showAlert('Failed to reset wallet. Please try again.');
+        }
+    };
+
     if (loading) {
         return (
             <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
@@ -349,6 +374,18 @@ const CosmosWallet: React.FC = () => {
                 ))}
             </List>
 
+            <Box mt={3}>
+                <Button
+                    variant="outlined"
+                    color="error"
+                    fullWidth
+                    onClick={handleResetWallet}
+                    startIcon={<WarningAmber/>}
+                    className="reset-wallet-button"
+                >
+                    Reset Wallet
+                </Button>
+            </Box>
 
             <Dialog
                 open={showMnemonicDialog}
@@ -403,6 +440,33 @@ const CosmosWallet: React.FC = () => {
                 <DialogActions>
                     <Button onClick={handleExportMnemonicDialogClose} className="mnemonic-confirm-button">
                         Close
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            <Dialog
+                open={showResetDialog}
+                onClose={() => setShowResetDialog(false)}
+                PaperProps={{
+                    className: "reset-dialog"
+                }}
+            >
+                <DialogTitle>Reset Wallet</DialogTitle>
+                <DialogContent>
+                    <Typography variant="body1" paragraph>
+                        Are you sure you want to reset your wallet? This action cannot be undone.
+                    </Typography>
+                    <Typography variant="body1" paragraph className="warning-text">
+                        Make sure you have saved your mnemonic phrase before resetting. You will need it to recover your
+                        wallet.
+                    </Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setShowResetDialog(false)} color="primary">
+                        Cancel
+                    </Button>
+                    <Button onClick={confirmResetWallet} color="error" variant="contained">
+                        Reset Wallet
                     </Button>
                 </DialogActions>
             </Dialog>

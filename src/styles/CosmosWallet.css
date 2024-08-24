@@ -334,3 +334,37 @@ h6 {
 .token-balance-item:hover {
     background-color: #3a3a3a;
 }
+
+.reset-wallet-button {
+    margin-top: 24px;
+    height: 40px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-transform: none !important;
+    letter-spacing: 0.5px;
+    background-color: transparent !important;
+    color: #ff4081 !important;
+    border-color: #ff4081 !important;
+}
+
+.reset-wallet-button:hover {
+    background-color: rgba(255, 64, 129, 0.1) !important;
+}
+
+.reset-dialog .MuiDialogTitle-root {
+    background-color: #ff4081;
+    color: #ffffff;
+}
+
+.reset-dialog .warning-text {
+    color: #ff4081;
+    font-weight: 500;
+}
+
+.reset-dialog .MuiButton-containedError {
+    background-color: #ff4081;
+}
+
+.reset-dialog .MuiButton-containedError:hover {
+    background-color: #f50057;
+}
