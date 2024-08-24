@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import {
     Dialog,
     DialogTitle,
@@ -15,14 +15,14 @@ import {
     ToggleButtonGroup,
     styled
 } from '@mui/material';
-import { SigningStargateClient, StdFee } from '@cosmjs/stargate';
-import { DirectSecp256k1HdWallet } from '@cosmjs/proto-signing';
-import { stringToPath } from '@cosmjs/crypto';
-import { coins } from '@cosmjs/proto-signing';
+import {SigningStargateClient, StdFee} from '@cosmjs/stargate';
+import {DirectSecp256k1HdWallet} from '@cosmjs/proto-signing';
+import {stringToPath} from '@cosmjs/crypto';
+import {coins} from '@cosmjs/proto-signing';
 import WebApp from '@twa-dev/sdk';
 
 // Styled components for dark theme
-const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
+const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({theme}) => ({
     '& .MuiToggleButtonGroup-grouped': {
         margin: theme.spacing(0.5),
         border: 0,
@@ -74,7 +74,7 @@ const GAS_PRICES = {
     high: 0.000029
 };
 
-const TokenTransfer: React.FC<TokenTransferProps> = ({ open, onClose, tokenSymbol, address, balance, mnemonic }) => {
+const TokenTransfer: React.FC<TokenTransferProps> = ({open, onClose, tokenSymbol, address, balance, mnemonic}) => {
     const [recipient, setRecipient] = useState('');
     const [amount, setAmount] = useState('');
     const [loading, setLoading] = useState(false);
@@ -102,8 +102,8 @@ const TokenTransfer: React.FC<TokenTransferProps> = ({ open, onClose, tokenSymbo
             const selectedGasPrice = GAS_PRICES[gasPrice];
             const adjustmentFactor = autoGasAdjustment ? GAS_ADJUSTMENT : parseFloat(manualGasAdjustment);
 
-            // Correct gas fee calculation
-            const gasFeeAmount = Math.round(gasLimit * (selectedGasPrice * 100000000) * adjustmentFactor);
+            // Adjusted gas fee calculation
+            const gasFeeAmount = Math.ceil(gasLimit * selectedGasPrice * adjustmentFactor);
 
             const fee: StdFee = {
                 amount: coins(gasFeeAmount, denom),
@@ -196,6 +196,11 @@ const TokenTransfer: React.FC<TokenTransferProps> = ({ open, onClose, tokenSymbo
                         label="Automatic Gas Adjustment"
                     />
                 </Box>
+                <Box mt={2}>
+                    <Typography variant="body2" gutterBottom>Estimated Fee: {
+                        (DEFAULT_GAS_LIMIT * GAS_PRICES[gasPrice] * (autoGasAdjustment ? GAS_ADJUSTMENT : parseFloat(manualGasAdjustment)) / 100000000).toFixed(6)
+                    } TURA</Typography>
+                </Box>
                 {!autoGasAdjustment && (
                     <TextField
                         margin="dense"
@@ -206,7 +211,7 @@ const TokenTransfer: React.FC<TokenTransferProps> = ({ open, onClose, tokenSymbo
                         onChange={(e) => setManualGasAdjustment(e.target.value)}
                         InputProps={{
                             style: {color: '#ffffff'},
-                            inputProps: { min: 1, step: 0.1 }
+                            inputProps: {min: 1, step: 0.1}
                         }}
                         InputLabelProps={{style: {color: '#aaaaaa'}}}
                     />
