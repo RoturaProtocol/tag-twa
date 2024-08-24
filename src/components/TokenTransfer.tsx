@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
     Dialog,
     DialogTitle,
@@ -15,14 +15,14 @@ import {
     ToggleButtonGroup,
     styled
 } from '@mui/material';
-import {SigningStargateClient, StdFee} from '@cosmjs/stargate';
-import {DirectSecp256k1HdWallet} from '@cosmjs/proto-signing';
-import {stringToPath} from '@cosmjs/crypto';
-import {coins} from '@cosmjs/proto-signing';
+import { SigningStargateClient, StdFee } from '@cosmjs/stargate';
+import { DirectSecp256k1HdWallet } from '@cosmjs/proto-signing';
+import { stringToPath } from '@cosmjs/crypto';
+import { coins } from '@cosmjs/proto-signing';
 import WebApp from '@twa-dev/sdk';
 
 // Styled components for dark theme
-const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({theme}) => ({
+const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({ theme }) => ({
     '& .MuiToggleButtonGroup-grouped': {
         margin: theme.spacing(0.5),
         border: 0,
@@ -65,7 +65,7 @@ interface TokenTransferProps {
 const TURA_RPC_ENDPOINT = "https://rpc-beta1.turablockchain.com";
 const TURA_PREFIX = "tura";
 const TURA_COIN_TYPE = "118";
-const DEFAULT_GAS_LIMIT = 100000; // Adjusted for Tura network
+const DEFAULT_GAS_LIMIT = 10; // Adjusted for Tura network
 const GAS_ADJUSTMENT = 1.3;
 
 const GAS_PRICES = {
@@ -74,7 +74,7 @@ const GAS_PRICES = {
     high: 0.000029
 };
 
-const TokenTransfer: React.FC<TokenTransferProps> = ({open, onClose, tokenSymbol, address, balance, mnemonic}) => {
+const TokenTransfer: React.FC<TokenTransferProps> = ({ open, onClose, tokenSymbol, address, balance, mnemonic }) => {
     const [recipient, setRecipient] = useState('');
     const [amount, setAmount] = useState('');
     const [loading, setLoading] = useState(false);
@@ -96,14 +96,17 @@ const TokenTransfer: React.FC<TokenTransferProps> = ({open, onClose, tokenSymbol
             const client = await SigningStargateClient.connectWithSigner(TURA_RPC_ENDPOINT, wallet);
 
             const denom = tokenSymbol === 'TURA' ? 'utura' : 'utags';
-            const transferAmount = coins(Math.floor(parseFloat(amount) * 1000000), denom);
+            const transferAmount = coins(Math.floor(parseFloat(amount) * 100000000), denom);
 
             const gasLimit = DEFAULT_GAS_LIMIT;
             const selectedGasPrice = GAS_PRICES[gasPrice];
             const adjustmentFactor = autoGasAdjustment ? GAS_ADJUSTMENT : parseFloat(manualGasAdjustment);
 
+            // Correct gas fee calculation
+            const gasFeeAmount = Math.round(gasLimit * (selectedGasPrice * 100000000) * adjustmentFactor);
+
             const fee: StdFee = {
-                amount: coins(Math.round(gasLimit * selectedGasPrice * adjustmentFactor * 1000000), denom),
+                amount: coins(gasFeeAmount, denom),
                 gas: gasLimit.toString(),
             };
 
@@ -131,7 +134,7 @@ const TokenTransfer: React.FC<TokenTransferProps> = ({open, onClose, tokenSymbol
                 style: {
                     backgroundColor: '#2a2a2a',
                     color: '#ffffff',
-                    minWidth: '300px',  // Ensure dialog is wide enough on mobile
+                    minWidth: '300px',
                 }
             }}
         >
@@ -203,7 +206,7 @@ const TokenTransfer: React.FC<TokenTransferProps> = ({open, onClose, tokenSymbol
                         onChange={(e) => setManualGasAdjustment(e.target.value)}
                         InputProps={{
                             style: {color: '#ffffff'},
-                            inputProps: {min: 1, step: 0.1}
+                            inputProps: { min: 1, step: 0.1 }
                         }}
                         InputLabelProps={{style: {color: '#aaaaaa'}}}
                     />
