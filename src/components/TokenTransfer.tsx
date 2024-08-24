@@ -9,8 +9,6 @@ import {
     Typography,
     Box,
     CircularProgress,
-    FormControlLabel,
-    Switch,
     ToggleButton,
     ToggleButtonGroup,
     styled
@@ -66,9 +64,8 @@ const TURA_RPC_ENDPOINT = "https://rpc-beta1.turablockchain.com";
 const TURA_PREFIX = "tura";
 const TURA_COIN_TYPE = "118";
 const DEFAULT_GAS_LIMIT = 100000; // Adjusted for Tura network
-const GAS_ADJUSTMENT = 1.3;
 
-const GAS_PRICES = {
+const GAS_FEES = {
     low: 0.000007,
     medium: 0.000018,
     high: 0.000029
@@ -79,9 +76,11 @@ const TokenTransfer: React.FC<TokenTransferProps> = ({open, onClose, tokenSymbol
     const [amount, setAmount] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [gasPrice, setGasPrice] = useState<'low' | 'medium' | 'high'>('medium');
-    const [autoGasAdjustment, setAutoGasAdjustment] = useState(true);
-    const [manualGasAdjustment, setManualGasAdjustment] = useState(GAS_ADJUSTMENT.toString());
+    const [gasFeeLevel, setGasFeeLevel] = useState<'low' | 'medium' | 'high'>('medium');
+
+    const calculateFee = (selectedFee: number): number => {
+        return Math.ceil(selectedFee * 100000000); // Convert TURA to utura
+    };
 
     const handleTransfer = async () => {
         setLoading(true);
@@ -96,21 +95,27 @@ const TokenTransfer: React.FC<TokenTransferProps> = ({open, onClose, tokenSymbol
             const client = await SigningStargateClient.connectWithSigner(TURA_RPC_ENDPOINT, wallet);
 
             const denom = tokenSymbol === 'TURA' ? 'utura' : 'utags';
-            const transferAmount = coins(Math.floor(parseFloat(amount) * 100000000), denom);
+            const transferAmount = Math.floor(parseFloat(amount) * 100000000);
+            console.log(`Transfer amount: ${transferAmount} ${denom}`);
 
-            const gasLimit = DEFAULT_GAS_LIMIT;
-            const selectedGasPrice = GAS_PRICES[gasPrice];
-            const adjustmentFactor = autoGasAdjustment ? GAS_ADJUSTMENT : parseFloat(manualGasAdjustment);
-
-            // Adjusted gas fee calculation
-            const gasFeeAmount = Math.ceil(gasLimit * selectedGasPrice * adjustmentFactor);
+            const gasFeeAmount = calculateFee(GAS_FEES[gasFeeLevel]);
 
             const fee: StdFee = {
                 amount: coins(gasFeeAmount, denom),
-                gas: gasLimit.toString(),
+                gas: DEFAULT_GAS_LIMIT.toString(),
             };
 
-            const result = await client.sendTokens(address, recipient, transferAmount, fee, "");
+            console.log(`Sending transaction with fee: ${JSON.stringify(fee)}`);
+
+            const result = await client.sendTokens(
+                address,
+                recipient,
+                coins(transferAmount, denom),
+                fee,
+                "Transfer from Tag Fusion TWA"
+            );
+
+            console.log(`Transaction result: ${JSON.stringify(result)}`);
 
             if (result.code !== undefined && result.code !== 0) {
                 throw new Error(result.rawLog);
@@ -125,6 +130,8 @@ const TokenTransfer: React.FC<TokenTransferProps> = ({open, onClose, tokenSymbol
             setLoading(false);
         }
     };
+
+    const estimatedFee = GAS_FEES[gasFeeLevel].toFixed(6);
 
     return (
         <Dialog
@@ -165,57 +172,28 @@ const TokenTransfer: React.FC<TokenTransferProps> = ({open, onClose, tokenSymbol
                     InputLabelProps={{style: {color: '#aaaaaa'}}}
                 />
                 <Box mt={2}>
-                    <Typography variant="body2" gutterBottom>Gas Price</Typography>
+                    <Typography variant="body2" gutterBottom>Gas Fee</Typography>
                     <StyledToggleButtonGroup
-                        value={gasPrice}
+                        value={gasFeeLevel}
                         exclusive
-                        onChange={(_, newValue) => newValue && setGasPrice(newValue)}
-                        aria-label="gas price"
+                        onChange={(_, newValue) => newValue && setGasFeeLevel(newValue)}
+                        aria-label="gas fee"
                         fullWidth
                     >
                         <StyledToggleButton value="low" aria-label="low">
-                            Low ({GAS_PRICES.low} TURA)
+                            Low ({GAS_FEES.low} TURA)
                         </StyledToggleButton>
                         <StyledToggleButton value="medium" aria-label="medium">
-                            Medium ({GAS_PRICES.medium} TURA)
+                            Medium ({GAS_FEES.medium} TURA)
                         </StyledToggleButton>
                         <StyledToggleButton value="high" aria-label="high">
-                            High ({GAS_PRICES.high} TURA)
+                            High ({GAS_FEES.high} TURA)
                         </StyledToggleButton>
                     </StyledToggleButtonGroup>
                 </Box>
                 <Box mt={2}>
-                    <FormControlLabel
-                        control={
-                            <Switch
-                                checked={autoGasAdjustment}
-                                onChange={(e) => setAutoGasAdjustment(e.target.checked)}
-                                color="primary"
-                            />
-                        }
-                        label="Automatic Gas Adjustment"
-                    />
+                    <Typography variant="body2" gutterBottom>Fee: {estimatedFee} TURA</Typography>
                 </Box>
-                <Box mt={2}>
-                    <Typography variant="body2" gutterBottom>Estimated Fee: {
-                        (DEFAULT_GAS_LIMIT * GAS_PRICES[gasPrice] * (autoGasAdjustment ? GAS_ADJUSTMENT : parseFloat(manualGasAdjustment)) / 100000000).toFixed(6)
-                    } TURA</Typography>
-                </Box>
-                {!autoGasAdjustment && (
-                    <TextField
-                        margin="dense"
-                        label="Gas Adjustment Factor"
-                        type="number"
-                        fullWidth
-                        value={manualGasAdjustment}
-                        onChange={(e) => setManualGasAdjustment(e.target.value)}
-                        InputProps={{
-                            style: {color: '#ffffff'},
-                            inputProps: {min: 1, step: 0.1}
-                        }}
-                        InputLabelProps={{style: {color: '#aaaaaa'}}}
-                    />
-                )}
                 {error && (
                     <Typography color="error" variant="body2" style={{marginTop: '8px'}}>
                         {error}
