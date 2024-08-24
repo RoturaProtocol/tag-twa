@@ -65,7 +65,7 @@ interface TokenTransferProps {
 const TURA_RPC_ENDPOINT = "https://rpc-beta1.turablockchain.com";
 const TURA_PREFIX = "tura";
 const TURA_COIN_TYPE = "118";
-const DEFAULT_GAS_LIMIT = 10; // Adjusted for Tura network
+const DEFAULT_GAS_LIMIT = 100000; // Adjusted for Tura network
 const GAS_ADJUSTMENT = 1.3;
 
 const GAS_PRICES = {
