@@ -23,6 +23,8 @@ import {Language, ContentCopy, Visibility, VisibilityOff, VpnKey} from '@mui/ico
 import WebApp from '@twa-dev/sdk';
 import {useNavigate} from 'react-router-dom';
 import '../styles/CosmosWallet.css';
+import TokenTransfer from './TokenTransfer';
+
 
 const TURA_PREFIX = "tura";
 const TURA_COIN_TYPE = "118";
@@ -50,6 +52,9 @@ const CosmosWallet: React.FC = () => {
     const [showFullAddress, setShowFullAddress] = useState<boolean>(false);
     const [showExportMnemonicDialog, setShowExportMnemonicDialog] = useState<boolean>(false);
     const navigate = useNavigate();
+    const [showTransferDialog, setShowTransferDialog] = useState(false);
+    const [selectedToken, setSelectedToken] = useState<TokenBalance | null>(null);
+
 
     useEffect(() => {
         loadExistingWallet();
@@ -60,6 +65,7 @@ const CosmosWallet: React.FC = () => {
             fetchBalances();
         }
     }, [address]);
+
 
     const loadExistingWallet = async () => {
         try {
@@ -219,6 +225,16 @@ const CosmosWallet: React.FC = () => {
         setShowExportMnemonicDialog(false);
     };
 
+    const handleTokenClick = (token: TokenBalance) => {
+        setSelectedToken(token);
+        setShowTransferDialog(true);
+    };
+
+    const handleCloseTransferDialog = () => {
+        setShowTransferDialog(false);
+        setSelectedToken(null);
+    };
+
     if (loading) {
         return (
             <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
@@ -298,7 +314,12 @@ const CosmosWallet: React.FC = () => {
             <Typography variant="h6" gutterBottom className="token-balances-title">Token Balances</Typography>
             <List>
                 {balances.map((token, index) => (
-                    <ListItem key={index} className="token-balance-item">
+                    <ListItem
+                        key={index}
+                        className="token-balance-item"
+                        onClick={() => handleTokenClick(token)}
+                        style={{cursor: 'pointer'}}
+                    >
                         <ListItemIcon>
                             {token.image ? (
                                 <img src={token.image} alt={token.symbol} style={{width: 50, height: 50}}/>
@@ -399,6 +420,16 @@ const CosmosWallet: React.FC = () => {
                     className: "copy-snackbar"
                 }}
             />
+            {selectedToken && (
+                <TokenTransfer
+                    open={showTransferDialog}
+                    onClose={handleCloseTransferDialog}
+                    tokenSymbol={selectedToken.symbol}
+                    address={address}
+                    balance={selectedToken.balance}
+                    mnemonic={mnemonic}
+                />
+            )}
         </Box>
     );
 };

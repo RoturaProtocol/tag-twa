@@ -288,3 +288,49 @@ h6 {
         font-size: 0.8rem;
     }
 }
+
+.MuiDialog-paper {
+    background-color: #2a2a2a !important;
+    color: #ffffff !important;
+}
+
+.MuiDialogTitle-root {
+    background-color: #1a1a1a;
+}
+
+.MuiDialogContent-root {
+    padding-top: 20px !important;
+}
+
+.MuiTextField-root {
+    margin-bottom: 16px !important;
+}
+
+.MuiInputLabel-root {
+    color: #aaaaaa !important;
+}
+
+.MuiOutlinedInput-root {
+    color: #ffffff !important;
+}
+
+.MuiOutlinedInput-notchedOutline {
+    border-color: #444444 !important;
+}
+
+.MuiButton-root {
+    color: #00d0ff !important;
+}
+
+.MuiCircularProgress-root {
+    color: #00d0ff !important;
+}
+
+/* Token Balance Item */
+.token-balance-item {
+    transition: background-color 0.3s ease;
+}
+
+.token-balance-item:hover {
+    background-color: #3a3a3a;
+}
