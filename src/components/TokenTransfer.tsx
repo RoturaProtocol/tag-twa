@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import {
     Dialog,
     DialogTitle,
@@ -13,10 +13,11 @@ import {
     Switch,
     InputAdornment
 } from '@mui/material';
-import { SigningStargateClient, StdFee } from '@cosmjs/stargate';
-import { DirectSecp256k1HdWallet } from '@cosmjs/proto-signing';
-import { stringToPath } from '@cosmjs/crypto';
-import { coins } from '@cosmjs/proto-signing';
+import {SigningStargateClient, StdFee} from '@cosmjs/stargate';
+import {DirectSecp256k1HdWallet} from '@cosmjs/proto-signing';
+import {stringToPath} from '@cosmjs/crypto';
+import {coins} from '@cosmjs/proto-signing';
+import {MsgSend} from 'cosmjs-types/cosmos/bank/v1beta1/tx';
 import WebApp from '@twa-dev/sdk';
 
 interface TokenTransferProps {
@@ -34,7 +35,7 @@ const TURA_COIN_TYPE = "118";
 const DEFAULT_GAS_PRICE = 0.025; // in TURA
 const DEFAULT_GAS_LIMIT = 200000;
 
-const TokenTransfer: React.FC<TokenTransferProps> = ({ open, onClose, tokenSymbol, address, balance, mnemonic }) => {
+const TokenTransfer: React.FC<TokenTransferProps> = ({open, onClose, tokenSymbol, address, balance, mnemonic}) => {
     const [recipient, setRecipient] = useState('');
     const [amount, setAmount] = useState('');
     const [loading, setLoading] = useState(false);
@@ -62,16 +63,7 @@ const TokenTransfer: React.FC<TokenTransferProps> = ({ open, onClose, tokenSymbo
             let gasPrice: string;
 
             if (autoGas) {
-                // Estimate the gas
-                gasLimit = await client.simulate(address, [{
-                    typeUrl: "/cosmos.bank.v1beta1.MsgSend",
-                    value: {
-                        fromAddress: address,
-                        toAddress: recipient,
-                        amount: transferAmount
-                    }
-                }], "");
-                gasLimit = Math.round(gasLimit * 1.3); // Add a 30% buffer
+                gasLimit = DEFAULT_GAS_LIMIT;
                 gasPrice = `${DEFAULT_GAS_PRICE}${denom}`;
             } else {
                 gasLimit = parseInt(manualGasLimit);
@@ -83,7 +75,35 @@ const TokenTransfer: React.FC<TokenTransferProps> = ({ open, onClose, tokenSymbo
                 gas: gasLimit.toString(),
             };
 
-            const result = await client.sendTokens(address, recipient, transferAmount, fee, "");
+            // Check if the account exists
+            const accountOnChain = await client.getAccount(address);
+
+            let result;
+            if (accountOnChain) {
+                // If the account exists, use the standard sendTokens method
+                result = await client.sendTokens(address, recipient, transferAmount, fee, "");
+            } else {
+                // If the account doesn't exist, we need to create and send the transaction manually
+                const msg = {
+                    typeUrl: "/cosmos.bank.v1beta1.MsgSend",
+                    value: MsgSend.fromPartial({
+                        fromAddress: address,
+                        toAddress: recipient,
+                        amount: transferAmount,
+                    }),
+                };
+
+                result = await client.signAndBroadcast(
+                    address,
+                    [msg],
+                    fee,
+                    ""
+                );
+            }
+
+            if (result.code !== undefined && result.code !== 0) {
+                throw new Error(result.rawLog);
+            }
 
             WebApp.showAlert(`Transfer successful! Transaction hash: ${result.transactionHash}`);
             onClose();
@@ -96,7 +116,7 @@ const TokenTransfer: React.FC<TokenTransferProps> = ({ open, onClose, tokenSymbo
     };
 
     return (
-        <Dialog open={open} onClose={onClose} PaperProps={{ style: { backgroundColor: '#2a2a2a', color: '#ffffff' } }}>
+        <Dialog open={open} onClose={onClose} PaperProps={{style: {backgroundColor: '#2a2a2a', color: '#ffffff'}}}>
             <DialogTitle>{`Transfer ${tokenSymbol}`}</DialogTitle>
             <DialogContent>
                 <Box mb={2}>
@@ -110,8 +130,8 @@ const TokenTransfer: React.FC<TokenTransferProps> = ({ open, onClose, tokenSymbo
                     fullWidth
                     value={recipient}
                     onChange={(e) => setRecipient(e.target.value)}
-                    InputProps={{ style: { color: '#ffffff' } }}
-                    InputLabelProps={{ style: { color: '#aaaaaa' } }}
+                    InputProps={{style: {color: '#ffffff'}}}
+                    InputLabelProps={{style: {color: '#aaaaaa'}}}
                 />
                 <TextField
                     margin="dense"
@@ -120,8 +140,8 @@ const TokenTransfer: React.FC<TokenTransferProps> = ({ open, onClose, tokenSymbo
                     fullWidth
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
-                    InputProps={{ style: { color: '#ffffff' } }}
-                    InputLabelProps={{ style: { color: '#aaaaaa' } }}
+                    InputProps={{style: {color: '#ffffff'}}}
+                    InputLabelProps={{style: {color: '#aaaaaa'}}}
                 />
                 <FormControlLabel
                     control={
@@ -142,8 +162,8 @@ const TokenTransfer: React.FC<TokenTransferProps> = ({ open, onClose, tokenSymbo
                             fullWidth
                             value={manualGasLimit}
                             onChange={(e) => setManualGasLimit(e.target.value)}
-                            InputProps={{ style: { color: '#ffffff' } }}
-                            InputLabelProps={{ style: { color: '#aaaaaa' } }}
+                            InputProps={{style: {color: '#ffffff'}}}
+                            InputLabelProps={{style: {color: '#aaaaaa'}}}
                         />
                         <TextField
                             margin="dense"
@@ -153,15 +173,16 @@ const TokenTransfer: React.FC<TokenTransferProps> = ({ open, onClose, tokenSymbo
                             value={manualGasPrice}
                             onChange={(e) => setManualGasPrice(e.target.value)}
                             InputProps={{
-                                style: { color: '#ffffff' },
-                                endAdornment: <InputAdornment position="end">{tokenSymbol.toLowerCase()}</InputAdornment>
+                                style: {color: '#ffffff'},
+                                endAdornment: <InputAdornment
+                                    position="end">{tokenSymbol.toLowerCase()}</InputAdornment>
                             }}
-                            InputLabelProps={{ style: { color: '#aaaaaa' } }}
+                            InputLabelProps={{style: {color: '#aaaaaa'}}}
                         />
                     </>
                 )}
                 {error && (
-                    <Typography color="error" variant="body2" style={{ marginTop: '8px' }}>
+                    <Typography color="error" variant="body2" style={{marginTop: '8px'}}>
                         {error}
                     </Typography>
                 )}
@@ -171,7 +192,7 @@ const TokenTransfer: React.FC<TokenTransferProps> = ({ open, onClose, tokenSymbo
                     Cancel
                 </Button>
                 <Button onClick={handleTransfer} color="primary" disabled={loading || !recipient || !amount}>
-                    {loading ? <CircularProgress size={24} /> : 'Transfer'}
+                    {loading ? <CircularProgress size={24}/> : 'Transfer'}
                 </Button>
             </DialogActions>
         </Dialog>
