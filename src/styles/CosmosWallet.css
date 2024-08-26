@@ -368,3 +368,11 @@ h6 {
 .reset-dialog .MuiButton-containedError:hover {
     background-color: #f50057;
 }
+
+.refresh-button {
+    color: #00d0ff !important;
+}
+
+.refresh-button:disabled {
+    color: #555555 !important;
+}

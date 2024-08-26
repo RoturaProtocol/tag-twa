@@ -19,7 +19,7 @@ import {
     Snackbar,
     Paper,
 } from '@mui/material';
-import {Language, ContentCopy, Visibility, VisibilityOff, VpnKey, WarningAmber} from '@mui/icons-material';
+import {Language, ContentCopy, Visibility, VisibilityOff, VpnKey, WarningAmber, Refresh} from '@mui/icons-material';
 import WebApp from '@twa-dev/sdk';
 import {useNavigate} from 'react-router-dom';
 import '../styles/CosmosWallet.css';
@@ -54,6 +54,7 @@ const CosmosWallet: React.FC = () => {
     const [showTransferDialog, setShowTransferDialog] = useState(false);
     const [selectedToken, setSelectedToken] = useState<TokenBalance | null>(null);
     const [showResetDialog, setShowResetDialog] = useState<boolean>(false);
+    const [refreshing, setRefreshing] = useState<boolean>(false);
 
     useEffect(() => {
         loadExistingWallet();
@@ -153,6 +154,7 @@ const CosmosWallet: React.FC = () => {
 
     const fetchBalances = async () => {
         try {
+            setRefreshing(true);
             const client = await StargateClient.connect(TURA_RPC_ENDPOINT);
             const balanceResponse = await client.getAllBalances(address);
 
@@ -177,6 +179,8 @@ const CosmosWallet: React.FC = () => {
         } catch (error) {
             console.error('Error fetching balances:', error);
             WebApp.showAlert('Failed to fetch balances. Please try again later.');
+        } finally {
+            setRefreshing(false);
         }
     };
 
@@ -231,6 +235,7 @@ const CosmosWallet: React.FC = () => {
     const handleCloseTransferDialog = () => {
         setShowTransferDialog(false);
         setSelectedToken(null);
+        fetchBalances(); // Refresh balance after closing transfer dialog
     };
 
     const handleResetWallet = () => {
@@ -336,7 +341,12 @@ const CosmosWallet: React.FC = () => {
                 </Box>
             </Paper>
 
-            <Typography variant="h6" gutterBottom className="token-balances-title">Token Balances</Typography>
+            <Box display="flex" justifyContent="space-between" alignItems="center" mt={3} mb={2}>
+                <Typography variant="h6" className="token-balances-title">Token Balances</Typography>
+                <IconButton onClick={fetchBalances} disabled={refreshing} className="refresh-button">
+                    <Refresh />
+                </IconButton>
+            </Box>
             <List>
                 {balances.map((token, index) => (
                     <ListItem
