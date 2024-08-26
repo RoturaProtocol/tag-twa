@@ -18,6 +18,7 @@ import {DirectSecp256k1HdWallet} from '@cosmjs/proto-signing';
 import {stringToPath} from '@cosmjs/crypto';
 import {coins} from '@cosmjs/proto-signing';
 import WebApp from '@twa-dev/sdk';
+import {TxRaw} from 'cosmjs-types/cosmos/tx/v1beta1/tx';
 
 // Styled components for dark theme
 const StyledToggleButtonGroup = styled(ToggleButtonGroup)(({theme}) => ({
@@ -122,19 +123,44 @@ const TokenTransfer: React.FC<TokenTransferProps> = ({
                 gas: DEFAULT_GAS_LIMIT.toString(),
             };
 
-            console.log(`Sending transaction with fee: ${JSON.stringify(fee)}`);
+            console.log(`Preparing transaction with fee: ${JSON.stringify(fee)}`);
 
-            const result = await client.sendTokens(
+            const sendMsg = {
+                typeUrl: "/cosmos.bank.v1beta1.MsgSend",
+                value: {
+                    fromAddress: address,
+                    toAddress: recipient,
+                    amount: coins(transferAmount, denom),
+                },
+            };
+
+            const memo = "Transfer from Tag Fusion TWA";
+
+            const account = await client.getAccount(address);
+
+            // Use client.sign instead of client.signAndBroadcast
+            const txRaw = await client.sign(
                 address,
-                recipient,
-                coins(transferAmount, denom),
+                [sendMsg],
                 fee,
-                "Transfer from Tag Fusion TWA"
+                memo,
+                {
+                    accountNumber: account === null ? 0 : account.accountNumber,
+                    sequence: account === null ? 0 : account.sequence,
+                    chainId: await client.getChainId(),
+                }
             );
+
+            // Broadcast the signed transaction
+            const txBytes = Uint8Array.from(TxRaw.encode(txRaw).finish());
+            const result = await client.broadcastTx(txBytes);
 
             console.log(`Raw transaction result:`, result);
 
-            // Assume the transaction was successful if we get here
+            if (result.code !== undefined && result.code !== 0) {
+                throw new Error(`Transaction failed with code ${result.code}: ${result.rawLog}`);
+            }
+
             setSuccessMessage(`Transfer of ${amount} ${tokenSymbol} to ${recipient} was successful. Transaction hash: ${result.transactionHash}`);
             WebApp.showAlert(`Transfer successful! Transaction hash: ${result.transactionHash}`);
         } catch (err) {
