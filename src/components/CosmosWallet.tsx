@@ -55,6 +55,7 @@ const CosmosWallet: React.FC = () => {
     const [selectedToken, setSelectedToken] = useState<TokenBalance | null>(null);
     const [showResetDialog, setShowResetDialog] = useState<boolean>(false);
     const [refreshing, setRefreshing] = useState<boolean>(false);
+    const [creditScore, setCreditScore] = useState<string | null>(null); // Add state for credit score
 
     useEffect(() => {
         loadExistingWallet();
@@ -63,6 +64,7 @@ const CosmosWallet: React.FC = () => {
     useEffect(() => {
         if (address) {
             fetchBalances();
+            fetchCreditScore(address); // Fetch credit score when address changes
         }
     }, [address]);
 
@@ -181,6 +183,27 @@ const CosmosWallet: React.FC = () => {
             WebApp.showAlert('Failed to fetch balances. Please try again later.');
         } finally {
             setRefreshing(false);
+        }
+    };
+
+    const fetchCreditScore = async (walletAddress: string) => {
+        try {
+            const response = await fetch('https://credit.tagfusion.org/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ wallet_address: walletAddress }),
+            });
+            const data = await response.json();
+            if (data.error) {
+                setCreditScore('No data');
+            } else {
+                setCreditScore(data.credit_score); // Assuming the API returns a credit_score field
+            }
+        } catch (error) {
+            console.error('Error fetching credit score:', error);
+            setCreditScore('0.0');
         }
     };
 
@@ -327,6 +350,22 @@ const CosmosWallet: React.FC = () => {
                         </IconButton>
                     </Box>
                 </Box>
+                <Typography 
+                    variant="body1" 
+                    gutterBottom 
+                    className="credit-score"
+                    sx={{
+                        color: 'lightgreen',
+                        fontWeight: 'bold',
+                        marginTop: 1,
+                        padding: '4px 8px',
+                        backgroundColor: '#2a2a2a', // Updated background color
+                        borderRadius: '4px',
+                        display: 'inline-block'
+                    }}
+                >
+                    Credit Score: {creditScore || 'N/A'}
+                </Typography>
                 <Box mt={3}>
                     <Button
                         variant="contained"
