@@ -24,6 +24,7 @@ import WebApp from '@twa-dev/sdk';
 import {useNavigate} from 'react-router-dom';
 import '../styles/CosmosWallet.css';
 import TokenTransfer from './TokenTransfer';
+import axios from 'axios';
 
 const TURA_PREFIX = "tura";
 const TURA_COIN_TYPE = "118";
@@ -188,18 +189,19 @@ const CosmosWallet: React.FC = () => {
 
     const fetchCreditScore = async (walletAddress: string) => {
         try {
-            const response = await fetch('https://credit.tagfusion.org/predict', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ wallet_address: walletAddress }),
-            });
-            const data = await response.json();
-            if (data.error) {
-                setCreditScore('No data');
+            const response = await axios.post('https://credit.tagfusion.org/predict', 
+                { wallet_address: walletAddress },
+                {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+            
+            if (response.data && response.data.credit_score !== undefined) {
+                setCreditScore(response.data.credit_score.toFixed(2)); // Round to 2 decimal places
             } else {
-                setCreditScore(data.credit_score); // Assuming the API returns a credit_score field
+                setCreditScore('No data');
             }
         } catch (error) {
             console.error('Error fetching credit score:', error);
