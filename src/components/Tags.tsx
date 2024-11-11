@@ -287,7 +287,7 @@ const Tags: React.FC = () => {
                                 </Typography>
                                 {xFollowButtonLoaded ? (
                                     <a
-                                        href="https://x.com/tagfusion0707"
+                                        href="https://x.com/Tag_Fusion"
                                         className="twitter-follow-button"
                                         data-size="large"
                                         data-show-count="false"
